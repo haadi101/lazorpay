@@ -56,6 +56,8 @@ export function useTransaction() {
         type: Transaction['type'],
         description: string
     ): Promise<T | null> => {
+        console.log('📋 useTransaction: Starting execute...');
+
         // Reset state and start loading
         setState({
             isLoading: true,
@@ -64,8 +66,12 @@ export function useTransaction() {
         });
 
         try {
+            console.log('📋 useTransaction: Calling txFunction...');
+
             // Execute the transaction
             const signature = await txFunction();
+
+            console.log('📋 useTransaction: txFunction returned:', signature);
 
             // Create transaction record
             const tx: Transaction = {
@@ -78,8 +84,12 @@ export function useTransaction() {
                 explorerUrl: getExplorerUrl(signature),
             };
 
+            console.log('📋 useTransaction: Updating history...');
+
             // Update history
             setHistory(prev => [tx, ...prev].slice(0, 10)); // Keep last 10
+
+            console.log('📋 useTransaction: Setting success state...');
 
             // Update state
             setState({
@@ -88,6 +98,7 @@ export function useTransaction() {
                 lastSignature: signature,
             });
 
+            console.log('📋 useTransaction: DONE! Returning signature:', signature);
             return signature;
         } catch (err) {
             // Handle error
