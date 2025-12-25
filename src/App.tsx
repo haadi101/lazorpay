@@ -134,7 +134,7 @@ function App() {
                 className="demo-tabs-indicator"
                 style={{
                   transform: `translateX(${tabs.findIndex(t => t.id === activeTab) * 100}%)`,
-                  width: `${100 / tabs.length}%`,
+                  width: `calc((100% - 0.75rem) / ${tabs.length})`,
                 }}
               />
               {tabs.map((tab) => (
