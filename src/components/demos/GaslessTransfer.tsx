@@ -32,6 +32,9 @@ export function GaslessTransfer() {
     const { signAndSendTransaction } = usePatchedWallet();
     const { execute, isLoading, error, lastSignature } = useTransaction();
 
+    // Debug log for render
+    console.log('🔄 GaslessTransfer Render:', { isLoading, hasSignature: !!lastSignature, error });
+
     // Form state
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('0.001');
@@ -46,9 +49,11 @@ export function GaslessTransfer() {
      * 4. Paymaster sponsors gas, transaction is sent
      */
     const handleTransfer = async () => {
+        console.log('▶️ handleTransfer started');
         if (!smartWalletPubkey || !recipient) return;
 
         await execute(async () => {
+            console.log('⚡ execute callback started');
             // Validate recipient address
             let destinationPubkey: PublicKey;
             try {
