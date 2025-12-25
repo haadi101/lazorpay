@@ -19,8 +19,8 @@
 export const NETWORKS = {
     devnet: {
         name: 'Devnet',
-        // Use a more reliable RPC endpoint (public Solana RPC has rate limits)
-        rpcUrl: 'https://devnet.helius-rpc.com/?api-key=15319bf4-5b40-4958-ac8d-6313aa55eb92',
+        // Solana public Devnet RPC - fallback to avoid rate limits
+        rpcUrl: 'https://api.devnet.solana.com',
         explorerUrl: 'https://explorer.solana.com/?cluster=devnet',
     },
     mainnet: {
