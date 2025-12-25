@@ -21,13 +21,6 @@ import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { getExplorerUrl } from '../../config/lazorkit';
 import './demos.css';
 
-// Local transaction state interface
-interface TransactionState {
-    isLoading: boolean;
-    error: string | null;
-    signature: string | null;
-}
-
 // =============================================================================
 // COMPONENT
 // =============================================================================
@@ -37,12 +30,10 @@ export function GaslessTransfer() {
     const { smartWalletPubkey, isConnected } = useWallet();
     const { signAndSendTransaction } = usePatchedWallet();
 
-    // Local state for 100% reliable UI updates
-    const [txState, setTxState] = useState<TransactionState>({
-        isLoading: false,
-        error: null,
-        signature: null,
-    });
+    // SEPARATE state hooks for 100% reliable React updates
+    const [isLoading, setIsLoading] = useState(false);
+    const [txError, setTxError] = useState<string | null>(null);
+    const [txSignature, setTxSignature] = useState<string | null>(null);
 
     // Form state
     const [recipient, setRecipient] = useState('');
@@ -56,11 +47,10 @@ export function GaslessTransfer() {
         if (!smartWalletPubkey || !recipient) return;
 
         // Reset state and start loading
-        setTxState({
-            isLoading: true,
-            error: null,
-            signature: null,
-        });
+        console.log('🔄 Setting isLoading = true');
+        setIsLoading(true);
+        setTxError(null);
+        setTxSignature(null);
 
         try {
             console.log('⚡ Starting transaction flow...');
@@ -86,23 +76,21 @@ export function GaslessTransfer() {
             });
 
             console.log('✅ Transaction confirmed in component:', sig);
+            console.log('🔄 Setting isLoading = false, txSignature =', sig);
 
-            // Update state with success (FORCE UPDATE)
-            setTxState({
-                isLoading: false,
-                error: null,
-                signature: sig,
-            });
+            // Update state with success - SEPARATE CALLS
+            setIsLoading(false);
+            setTxSignature(sig);
+
+            console.log('✅ State updates called!');
 
         } catch (err) {
             console.error('❌ Transfer failed:', err);
             const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
 
-            setTxState({
-                isLoading: false,
-                error: errorMessage,
-                signature: null,
-            });
+            console.log('🔄 Setting error state');
+            setIsLoading(false);
+            setTxError(errorMessage);
         }
     };
 
@@ -154,30 +142,30 @@ export function GaslessTransfer() {
                     <Button
                         variant="primary"
                         fullWidth
-                        isLoading={txState.isLoading}
+                        isLoading={isLoading}
                         onClick={handleTransfer}
                         disabled={!recipient || !amount}
                     >
-                        {txState.isLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
+                        {isLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
                     </Button>
                 </div>
             </div>
 
             {/* Error Display */}
-            {txState.error && (
+            {txError && (
                 <div className="demo-error">
-                    <strong>Error:</strong> {txState.error}
+                    <strong>Error:</strong> {txError}
                 </div>
             )}
 
             {/* Success Display */}
-            {txState.signature && (
+            {txSignature && (
                 <div className="demo-success">
                     <div className="success-icon">✓</div>
                     <div className="success-content">
                         <h5>Transfer Successful!</h5>
                         <a
-                            href={getExplorerUrl(txState.signature)}
+                            href={getExplorerUrl(txSignature)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="explorer-link"
