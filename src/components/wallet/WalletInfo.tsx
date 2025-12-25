@@ -30,6 +30,20 @@ interface WalletBalance {
 export function WalletInfo() {
     const { wallet, isConnected, smartWalletPubkey } = useWallet();
     const [balance, setBalance] = useState<WalletBalance>({ sol: 0, isLoading: true });
+    const [copied, setCopied] = useState(false);
+
+    // Copy wallet address to clipboard
+    const copyAddress = async () => {
+        if (!wallet?.smartWallet) return;
+
+        try {
+            await navigator.clipboard.writeText(wallet.smartWallet);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
 
     // Fetch SOL balance when wallet connects
     useEffect(() => {
@@ -91,15 +105,24 @@ export function WalletInfo() {
                 {/* Smart Wallet Address - This is your main Solana address */}
                 <div className="wallet-info-row">
                     <span className="row-label">Smart Wallet</span>
-                    <a
-                        href={getAccountExplorerUrl(wallet.smartWallet)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="row-value row-link"
-                    >
-                        {truncateAddress(wallet.smartWallet, 8)}
-                        <span className="link-icon">↗</span>
-                    </a>
+                    <div className="row-value-group">
+                        <a
+                            href={getAccountExplorerUrl(wallet.smartWallet)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="row-value row-link"
+                        >
+                            {truncateAddress(wallet.smartWallet, 8)}
+                            <span className="link-icon">↗</span>
+                        </a>
+                        <button
+                            className={`copy-btn ${copied ? 'copied' : ''}`}
+                            onClick={copyAddress}
+                            title="Copy address"
+                        >
+                            {copied ? '✓' : '📋'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Platform info */}
