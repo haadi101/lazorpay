@@ -38,6 +38,7 @@ export function GaslessTransfer() {
     // Form state
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('0.001');
+    const [isSending, setIsSending] = useState(false); // Local loading state fallback
 
     /**
      * Handle SOL transfer
@@ -52,35 +53,44 @@ export function GaslessTransfer() {
         console.log('▶️ handleTransfer started');
         if (!smartWalletPubkey || !recipient) return;
 
-        await execute(async () => {
-            console.log('⚡ execute callback started');
-            // Validate recipient address
-            let destinationPubkey: PublicKey;
-            try {
-                destinationPubkey = new PublicKey(recipient);
-            } catch {
-                throw new Error('Invalid recipient address');
-            }
+        setIsSending(true); // Start local loading
 
-            // Create transfer instruction
-            const instruction = SystemProgram.transfer({
-                fromPubkey: smartWalletPubkey,
-                toPubkey: destinationPubkey,
-                lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
-            });
+        try {
+            await execute(async () => {
+                console.log('⚡ execute callback started');
+                // Validate recipient address
+                let destinationPubkey: PublicKey;
+                try {
+                    destinationPubkey = new PublicKey(recipient);
+                } catch {
+                    throw new Error('Invalid recipient address');
+                }
 
-            // Sign and send with paymaster
-            // The paymaster URL is configured in LazorkitProvider
-            const signature = await signAndSendTransaction({
-                instructions: [instruction],
-                transactionOptions: {
-                    // Optional: Pay gas in USDC instead of having paymaster fully sponsor
-                    // feeToken: 'USDC',
-                },
-            });
+                // Create transfer instruction
+                const instruction = SystemProgram.transfer({
+                    fromPubkey: smartWalletPubkey,
+                    toPubkey: destinationPubkey,
+                    lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
+                });
 
-            return signature;
-        }, 'transfer', `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`);
+                // Sign and send with paymaster
+                // The paymaster URL is configured in LazorkitProvider
+                const signature = await signAndSendTransaction({
+                    instructions: [instruction],
+                    transactionOptions: {
+                        // Optional: Pay gas in USDC instead of having paymaster fully sponsor
+                        // feeToken: 'USDC',
+                    },
+                });
+
+                return signature;
+            }, 'transfer', `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`);
+        } catch (e) {
+            console.error('Transfer failed locally:', e);
+        } finally {
+            setIsSending(false); // End local loading
+            console.log('⏹️ handleTransfer finished - Local loading state cleared');
+        }
     };
 
     // Show connect prompt if not connected
@@ -98,12 +108,18 @@ export function GaslessTransfer() {
         );
     }
 
+    // Determine loading state (track either hook or local state)
+    const showLoading = isLoading || isSending;
+
     return (
         <Card
             title="💸 Gasless SOL Transfer"
             subtitle="Send SOL without paying gas fees"
             className="demo-card"
         >
+            {/* Debug State */}
+            {/* <div style={{fontSize: 10, opacity: 0.5}}>State: {showLoading ? 'Loading' : 'Idle'} (Hook: {isLoading ? 'T' : 'F'}, Local: {isSending ? 'T' : 'F'})</div> */}
+
             {/* Transfer Form */}
             <div className="demo-section">
                 <h4 className="demo-section-title">Send SOL</h4>
@@ -131,11 +147,11 @@ export function GaslessTransfer() {
                     <Button
                         variant="primary"
                         fullWidth
-                        isLoading={isLoading}
+                        isLoading={showLoading}
                         onClick={handleTransfer}
                         disabled={!recipient || !amount}
                     >
-                        {isLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
+                        {showLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
                     </Button>
                 </div>
             </div>

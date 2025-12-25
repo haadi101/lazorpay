@@ -89,11 +89,14 @@ export function usePatchedWallet() {
             timestamp: new Date().toISOString(),
         });
 
+        let timerId: ReturnType<typeof setTimeout> | undefined;
+
         try {
             // Add timeout to prevent infinite loading
             const timeoutMs = 90000; // 90 seconds
+
             const timeoutPromise = new Promise<never>((_, reject) => {
-                setTimeout(() => {
+                timerId = setTimeout(() => {
                     console.error('⏰ Transaction timeout reached');
                     reject(new Error('Transaction timed out. Check Solana Explorer for status.'));
                 }, timeoutMs);
@@ -105,6 +108,8 @@ export function usePatchedWallet() {
                 wallet.signAndSendTransaction(payload),
                 timeoutPromise,
             ]);
+
+            if (timerId) clearTimeout(timerId);
 
             console.log('📥 SDK returned:', typeof result, result);
 
