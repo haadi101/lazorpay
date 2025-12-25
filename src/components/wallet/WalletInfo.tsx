@@ -23,7 +23,7 @@ export function WalletInfo() {
     const [copied, setCopied] = useState(false);
 
     // Use the production-grade balance hook
-    const { sol, isLoading, error, refresh } = useSolanaBalance(smartWalletPubkey, {
+    const { sol, isLoading } = useSolanaBalance(smartWalletPubkey, {
         refreshInterval: 60000, // Refresh every 60 seconds
         maxRetries: 3,
         autoRefresh: true,
