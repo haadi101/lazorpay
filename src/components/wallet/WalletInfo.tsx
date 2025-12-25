@@ -52,24 +52,38 @@ export function WalletInfo() {
             return;
         }
 
+        let isMounted = true;
+
         const fetchBalance = async () => {
-            setBalance(prev => ({ ...prev, isLoading: true }));
+            // Don't show loading on refresh to prevent flicker
+            if (balance.sol === 0) {
+                setBalance(prev => ({ ...prev, isLoading: true }));
+            }
 
             try {
-                const connection = new Connection(ACTIVE_NETWORK.rpcUrl);
+                const connection = new Connection(ACTIVE_NETWORK.rpcUrl, {
+                    commitment: 'confirmed',
+                });
                 const lamports = await connection.getBalance(smartWalletPubkey);
-                setBalance({ sol: lamports / LAMPORTS_PER_SOL, isLoading: false });
+                if (isMounted) {
+                    setBalance({ sol: lamports / LAMPORTS_PER_SOL, isLoading: false });
+                }
             } catch (error) {
                 console.error('Failed to fetch balance:', error);
-                setBalance({ sol: 0, isLoading: false });
+                if (isMounted) {
+                    setBalance(prev => ({ ...prev, isLoading: false }));
+                }
             }
         };
 
         fetchBalance();
 
-        // Refresh balance every 30 seconds
-        const interval = setInterval(fetchBalance, 30000);
-        return () => clearInterval(interval);
+        // Refresh balance every 15 seconds (faster updates)
+        const interval = setInterval(fetchBalance, 15000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, [smartWalletPubkey]);
 
     // Don't render if not connected
@@ -85,7 +99,7 @@ export function WalletInfo() {
                     <span className="balance-label">Smart Wallet Balance</span>
                     <span className="balance-value">
                         {balance.isLoading ? (
-                            <span className="balance-loading">Loading...</span>
+                            <span className="balance-skeleton" />
                         ) : (
                             <>
                                 <span className="balance-amount">{balance.sol.toFixed(4)}</span>
