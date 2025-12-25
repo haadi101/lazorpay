@@ -53,10 +53,11 @@ export function WalletInfo() {
         }
 
         let isMounted = true;
+        let hasLoggedError = false;
 
         const fetchBalance = async () => {
             // Don't show loading on refresh to prevent flicker
-            if (balance.sol === 0) {
+            if (balance.sol === 0 && !hasLoggedError) {
                 setBalance(prev => ({ ...prev, isLoading: true }));
             }
 
@@ -67,9 +68,14 @@ export function WalletInfo() {
                 const lamports = await connection.getBalance(smartWalletPubkey);
                 if (isMounted) {
                     setBalance({ sol: lamports / LAMPORTS_PER_SOL, isLoading: false });
+                    hasLoggedError = false; // Reset on success
                 }
-            } catch (error) {
-                console.error('Failed to fetch balance:', error);
+            } catch {
+                // Only log error once to prevent console spam
+                if (!hasLoggedError) {
+                    console.warn('Balance fetch failed - RPC may be rate limited');
+                    hasLoggedError = true;
+                }
                 if (isMounted) {
                     setBalance(prev => ({ ...prev, isLoading: false }));
                 }
@@ -78,8 +84,8 @@ export function WalletInfo() {
 
         fetchBalance();
 
-        // Refresh balance every 15 seconds (faster updates)
-        const interval = setInterval(fetchBalance, 15000);
+        // Refresh balance every 30 seconds (slower to avoid rate limits)
+        const interval = setInterval(fetchBalance, 30000);
         return () => {
             isMounted = false;
             clearInterval(interval);
