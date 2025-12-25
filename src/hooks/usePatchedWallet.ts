@@ -76,33 +76,72 @@ export function usePatchedWallet() {
     }, [wallet.signMessage]);
 
     /**
-     * Enhanced signAndSendTransaction with logging and timeout
+     * Enhanced signAndSendTransaction with robust response handling
      * 
-     * The SDK handles signing internally, so we can't patch the signature here.
-     * Instead, we add logging to help debug transaction issues.
+     * The SDK may return different types depending on the flow:
+     * - String: direct signature
+     * - Object: { signature: string } or similar
+     * - Array: [signature1, signature2] for chunked transactions
      */
     const patchedSignAndSendTransaction = useCallback(async (payload: Parameters<typeof wallet.signAndSendTransaction>[0]): Promise<string> => {
-        console.log('🔧 usePatchedWallet: Sending transaction...', {
+        console.log('🔧 usePatchedWallet: Starting transaction...', {
             instructionCount: payload.instructions?.length ?? 0,
+            timestamp: new Date().toISOString(),
         });
 
         try {
             // Add timeout to prevent infinite loading
-            const timeoutMs = 120000; // 2 minutes
+            const timeoutMs = 90000; // 90 seconds
             const timeoutPromise = new Promise<never>((_, reject) => {
-                setTimeout(() => reject(new Error('Transaction timed out after 2 minutes')), timeoutMs);
+                setTimeout(() => {
+                    console.error('⏰ Transaction timeout reached');
+                    reject(new Error('Transaction timed out. Check Solana Explorer for status.'));
+                }, timeoutMs);
             });
 
-            const signature = await Promise.race([
+            console.log('📤 Calling SDK signAndSendTransaction...');
+
+            const result = await Promise.race([
                 wallet.signAndSendTransaction(payload),
                 timeoutPromise,
             ]);
 
-            // Ensure we have a valid signature string
-            const sigString = typeof signature === 'string' ? signature : String(signature);
+            console.log('📥 SDK returned:', typeof result, result);
 
-            console.log('✅ usePatchedWallet: Transaction confirmed:', sigString);
-            return sigString;
+            // Extract signature from various possible return formats
+            let signature: string;
+
+            if (typeof result === 'string') {
+                // Direct string signature
+                signature = result;
+            } else if (result && typeof result === 'object') {
+                // Object with signature property
+                const obj = result as Record<string, unknown>;
+                if ('signature' in obj && typeof obj.signature === 'string') {
+                    signature = obj.signature;
+                } else if ('signatures' in obj && Array.isArray(obj.signatures) && obj.signatures.length > 0) {
+                    // Multiple signatures - take the last one (the actual transaction)
+                    const sigs = obj.signatures as string[];
+                    signature = sigs[sigs.length - 1];
+                } else {
+                    // Try to stringify and extract
+                    const str = JSON.stringify(result);
+                    console.warn('⚠️ Unexpected result format:', str);
+                    // Try to find a signature-like string (base58, 87-88 chars)
+                    const match = str.match(/[1-9A-HJ-NP-Za-km-z]{87,88}/);
+                    if (match) {
+                        signature = match[0];
+                    } else {
+                        throw new Error('Could not extract signature from result');
+                    }
+                }
+            } else {
+                throw new Error(`Unexpected result type: ${typeof result}`);
+            }
+
+            console.log('✅ usePatchedWallet: Transaction confirmed!', signature);
+            return signature;
+
         } catch (error) {
             console.error('❌ usePatchedWallet: Transaction failed:', error);
 
@@ -110,19 +149,11 @@ export function usePatchedWallet() {
             const errorMessage = error instanceof Error ? error.message : String(error);
 
             if (errorMessage.includes('0x2') || errorMessage.includes('invalid signature')) {
-                console.error(
-                    '🚨 High-S signature detected! The SDK may need patching.\n' +
-                    'See: https://github.com/lazor-kit/lazor-kit/issues for updates.'
-                );
+                console.error('🚨 High-S signature detected!');
             }
 
             if (errorMessage.includes('too large') || errorMessage.includes('1232')) {
-                console.error(
-                    '🚨 Transaction too large! Consider:\n' +
-                    '- Reducing instruction count\n' +
-                    '- Using Address Lookup Tables\n' +
-                    '- Splitting into multiple transactions'
-                );
+                console.error('🚨 Transaction too large!');
             }
 
             throw error;
