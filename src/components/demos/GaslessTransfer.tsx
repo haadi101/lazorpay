@@ -12,6 +12,7 @@
  */
 
 import { useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useWallet } from '@lazorkit/wallet';
 import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Card } from '../ui/Card';
@@ -30,7 +31,7 @@ export function GaslessTransfer() {
     const { smartWalletPubkey, isConnected } = useWallet();
     const { signAndSendTransaction } = usePatchedWallet();
 
-    // SEPARATE state hooks for 100% reliable React updates
+    // State with forced sync updates
     const [isLoading, setIsLoading] = useState(false);
     const [txError, setTxError] = useState<string | null>(null);
     const [txSignature, setTxSignature] = useState<string | null>(null);
@@ -40,20 +41,22 @@ export function GaslessTransfer() {
     const [amount, setAmount] = useState('0.001');
 
     /**
-     * Handle SOL transfer
+     * Handle SOL transfer with flushSync for immediate UI updates
      */
     const handleTransfer = async () => {
         console.log('▶️ handleTransfer started');
         if (!smartWalletPubkey || !recipient) return;
 
-        // Reset state and start loading
-        console.log('🔄 Setting isLoading = true');
-        setIsLoading(true);
-        setTxError(null);
-        setTxSignature(null);
+        // Reset state and start loading - FORCE SYNC
+        flushSync(() => {
+            setIsLoading(true);
+            setTxError(null);
+            setTxSignature(null);
+        });
 
         try {
             console.log('⚡ Starting transaction flow...');
+
             // Validate recipient address
             let destinationPubkey: PublicKey;
             try {
@@ -75,22 +78,28 @@ export function GaslessTransfer() {
                 transactionOptions: {},
             });
 
-            console.log('✅ Transaction confirmed in component:', sig);
-            console.log('🔄 Setting isLoading = false, txSignature =', sig);
+            console.log('✅ Transaction confirmed:', sig);
 
-            // Update state with success - SEPARATE CALLS
-            setIsLoading(false);
-            setTxSignature(sig);
+            // FORCE SYNC UPDATE - This MUST update the UI immediately
+            flushSync(() => {
+                setIsLoading(false);
+                setTxSignature(sig);
+            });
 
-            console.log('✅ State updates called!');
+            console.log('✅ flushSync completed - UI should be updated now');
+
+            // Also show an alert as backup confirmation
+            alert(`✅ Transaction successful!\n\nSignature: ${sig.slice(0, 20)}...`);
 
         } catch (err) {
             console.error('❌ Transfer failed:', err);
             const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
 
-            console.log('🔄 Setting error state');
-            setIsLoading(false);
-            setTxError(errorMessage);
+            // FORCE SYNC ERROR UPDATE
+            flushSync(() => {
+                setIsLoading(false);
+                setTxError(errorMessage);
+            });
         }
     };
 
