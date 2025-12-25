@@ -18,6 +18,23 @@ import { useState } from 'react';
 import { LazorkitProvider } from '@lazorkit/wallet';
 import { LAZORKIT_CONFIG } from './config/lazorkit';
 
+// Lucide Icons - Professional iconography
+import {
+  Fingerprint,
+  ArrowRightLeft,
+  PenLine,
+  Coins,
+  Zap,
+  User,
+  KeyRound,
+  Wallet,
+  Fuel,
+  Circle,
+  X,
+  Check,
+  ChevronRight
+} from 'lucide-react';
+
 // Components
 import { ConnectButton } from './components/wallet/ConnectButton';
 import { WalletInfo } from './components/wallet/WalletInfo';
@@ -32,21 +49,28 @@ import { SponsoredMint } from './components/demos/SponsoredMint';
 import './index.css';
 
 // =============================================================================
-// DEMO TABS
+// DEMO TABS - Using Lucide Icons
 // =============================================================================
 
 type DemoTab = 'passkey' | 'transfer' | 'sign' | 'mint';
 
-const tabs: { id: DemoTab; label: string; icon: string }[] = [
-  { id: 'passkey', label: 'Passkey Auth', icon: '🔐' },
-  { id: 'transfer', label: 'Gasless Transfer', icon: '💸' },
-  { id: 'sign', label: 'Sign Message', icon: '✍️' },
-  { id: 'mint', label: 'Token Mint', icon: '🪙' },
+interface TabConfig {
+  id: DemoTab;
+  label: string;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+}
+
+const tabs: TabConfig[] = [
+  { id: 'passkey', label: 'Passkey Auth', Icon: Fingerprint },
+  { id: 'transfer', label: 'Gasless Transfer', Icon: ArrowRightLeft },
+  { id: 'sign', label: 'Sign Message', Icon: PenLine },
+  { id: 'mint', label: 'Token Mint', Icon: Coins },
 ];
 
 // =============================================================================
 // MAIN APP
 // =============================================================================
+
 
 function App() {
   const [activeTab, setActiveTab] = useState<DemoTab>('passkey');
@@ -73,8 +97,10 @@ function App() {
         {/* Header */}
         <header className="header">
           <div className="header-content">
-            <div className="header-brand">
-              <span className="brand-logo">⚡</span>
+            <div className="header-brand group">
+              <span className="brand-logo">
+                <Zap size={20} strokeWidth={2} className="text-yellow-400 group-hover:text-yellow-300 transition-colors" />
+              </span>
               <span className="brand-name">LazorPay</span>
               <span className="brand-badge">Starter Template</span>
             </div>
@@ -106,10 +132,19 @@ function App() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  className={`demo-tab ${activeTab === tab.id ? 'demo-tab-active' : ''}`}
+                  className={`demo-tab group ${activeTab === tab.id ? 'demo-tab-active' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <span className="tab-icon">{tab.icon}</span>
+                  <span className="tab-icon">
+                    <tab.Icon
+                      size={18}
+                      strokeWidth={1.5}
+                      className={`transition-all duration-200 ${activeTab === tab.id
+                        ? 'text-white'
+                        : 'text-zinc-400 group-hover:text-zinc-200'
+                        }`}
+                    />
+                  </span>
                   <span className="tab-label">{tab.label}</span>
                 </button>
               ))}
@@ -130,32 +165,48 @@ function App() {
             <div className="architecture-diagram">
               <div className="arch-row">
                 <div className="arch-box arch-user">
-                  <span className="arch-icon">👤</span>
+                  <span className="arch-icon">
+                    <User size={24} strokeWidth={1.5} className="text-blue-400" />
+                  </span>
                   <span className="arch-label">User</span>
                   <span className="arch-desc">Authenticates with biometrics</span>
                 </div>
-                <div className="arch-arrow">→</div>
+                <div className="arch-arrow">
+                  <ChevronRight size={20} strokeWidth={2} className="text-zinc-500" />
+                </div>
                 <div className="arch-box arch-passkey">
-                  <span className="arch-icon">🔐</span>
+                  <span className="arch-icon">
+                    <KeyRound size={24} strokeWidth={1.5} className="text-purple-400" />
+                  </span>
                   <span className="arch-label">Passkey</span>
                   <span className="arch-desc">WebAuthn credential in Secure Enclave</span>
                 </div>
-                <div className="arch-arrow">→</div>
+                <div className="arch-arrow">
+                  <ChevronRight size={20} strokeWidth={2} className="text-zinc-500" />
+                </div>
                 <div className="arch-box arch-wallet">
-                  <span className="arch-icon">💼</span>
+                  <span className="arch-icon">
+                    <Wallet size={24} strokeWidth={1.5} className="text-emerald-400" />
+                  </span>
                   <span className="arch-label">Smart Wallet</span>
                   <span className="arch-desc">PDA controlled by passkey</span>
                 </div>
               </div>
               <div className="arch-row arch-row-second">
                 <div className="arch-box arch-paymaster">
-                  <span className="arch-icon">⛽</span>
+                  <span className="arch-icon">
+                    <Fuel size={24} strokeWidth={1.5} className="text-orange-400" />
+                  </span>
                   <span className="arch-label">Paymaster</span>
                   <span className="arch-desc">Sponsors gas fees</span>
                 </div>
-                <div className="arch-arrow">→</div>
+                <div className="arch-arrow">
+                  <ChevronRight size={20} strokeWidth={2} className="text-zinc-500" />
+                </div>
                 <div className="arch-box arch-solana">
-                  <span className="arch-icon">◎</span>
+                  <span className="arch-icon">
+                    <Circle size={24} strokeWidth={1.5} className="text-gradient-solana" />
+                  </span>
                   <span className="arch-label">Solana</span>
                   <span className="arch-desc">Transaction executed on-chain</span>
                 </div>
@@ -163,7 +214,10 @@ function App() {
             </div>
             <div className="architecture-comparison">
               <div className="comparison-card">
-                <h4>❌ Traditional Wallet</h4>
+                <h4 className="comparison-header-bad">
+                  <X size={18} strokeWidth={2} className="text-red-400" />
+                  <span>Traditional Wallet</span>
+                </h4>
                 <ul>
                   <li>Install browser extension</li>
                   <li>Write down 24 seed words</li>
@@ -172,7 +226,10 @@ function App() {
                 </ul>
               </div>
               <div className="comparison-card comparison-card-good">
-                <h4>✅ LazorKit Smart Wallet</h4>
+                <h4 className="comparison-header-good">
+                  <Check size={18} strokeWidth={2} className="text-emerald-400" />
+                  <span>LazorKit Smart Wallet</span>
+                </h4>
                 <ul>
                   <li>Use existing biometrics</li>
                   <li>No seed phrase needed</li>

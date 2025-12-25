@@ -20,6 +20,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { getExplorerUrl } from '../../config/lazorkit';
+import { ArrowRightLeft, CheckCircle, ExternalLink } from 'lucide-react';
 import './demos.css';
 
 // =============================================================================
@@ -107,9 +108,10 @@ export function GaslessTransfer() {
     if (!isConnected) {
         return (
             <Card
-                title="💸 Gasless SOL Transfer"
+                title="Gasless SOL Transfer"
                 subtitle="Send SOL without paying gas fees"
                 className="demo-card"
+                icon={<ArrowRightLeft size={20} strokeWidth={1.5} className="text-emerald-400" />}
             >
                 <div className="demo-connect-prompt">
                     <p>Connect your wallet to try gasless transfers</p>
@@ -120,9 +122,10 @@ export function GaslessTransfer() {
 
     return (
         <Card
-            title="💸 Gasless SOL Transfer"
+            title="Gasless SOL Transfer"
             subtitle="Send SOL without paying gas fees"
             className="demo-card"
+            icon={<ArrowRightLeft size={20} strokeWidth={1.5} className="text-emerald-400" />}
         >
             {/* Transfer Form */}
             <div className="demo-section">
@@ -170,16 +173,19 @@ export function GaslessTransfer() {
             {/* Success Display */}
             {txSignature && (
                 <div className="demo-success">
-                    <div className="success-icon">✓</div>
+                    <div className="success-icon">
+                        <CheckCircle size={24} strokeWidth={1.5} className="text-emerald-400" />
+                    </div>
                     <div className="success-content">
                         <h5>Transfer Successful!</h5>
                         <a
                             href={getExplorerUrl(txSignature)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="explorer-link"
+                            className="explorer-link group"
                         >
-                            View on Solana Explorer ↗
+                            View on Solana Explorer
+                            <ExternalLink size={14} strokeWidth={1.5} className="ml-1 group-hover:translate-x-0.5 transition-transform" />
                         </a>
                     </div>
                 </div>
@@ -190,19 +196,19 @@ export function GaslessTransfer() {
                 <h4 className="demo-section-title">How Gasless Works</h4>
                 <div className="demo-info-grid">
                     <div className="info-item">
-                        <span className="info-icon">1️⃣</span>
+                        <span className="info-step">1</span>
                         <span className="info-text">You build the transaction</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">2️⃣</span>
+                        <span className="info-step">2</span>
                         <span className="info-text">Sign with your passkey</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">3️⃣</span>
+                        <span className="info-step">3</span>
                         <span className="info-text">Paymaster pays gas fee</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">4️⃣</span>
+                        <span className="info-step">4</span>
                         <span className="info-text">Transaction confirmed!</span>
                     </div>
                 </div>

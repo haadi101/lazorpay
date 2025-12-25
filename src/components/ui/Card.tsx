@@ -2,7 +2,7 @@
  * Card Component
  * 
  * A glassmorphism-styled card container for grouping content.
- * Supports optional header, glow effects, and interactive states.
+ * Supports optional header with icon, glow effects, and interactive states.
  */
 
 import React from 'react';
@@ -19,6 +19,8 @@ interface CardProps {
     title?: string;
     /** Optional subtitle/description */
     subtitle?: string;
+    /** Optional icon displayed before title */
+    icon?: React.ReactNode;
     /** Add glow effect on hover */
     glow?: boolean;
     /** Make card clickable */
@@ -35,6 +37,7 @@ export function Card({
     children,
     title,
     subtitle,
+    icon,
     glow = false,
     onClick,
     className = '',
@@ -55,7 +58,12 @@ export function Card({
         >
             {(title || subtitle) && (
                 <div className="card-header">
-                    {title && <h3 className="card-title">{title}</h3>}
+                    {title && (
+                        <h3 className="card-title">
+                            {icon && <span className="card-title-icon">{icon}</span>}
+                            <span>{title}</span>
+                        </h3>
+                    )}
                     {subtitle && <p className="card-subtitle">{subtitle}</p>}
                 </div>
             )}
@@ -65,3 +73,4 @@ export function Card({
         </div>
     );
 }
+
