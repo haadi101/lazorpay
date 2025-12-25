@@ -129,6 +129,14 @@ function App() {
           {/* Demo Tabs */}
           <section className="demos-section">
             <nav className="demo-tabs">
+              {/* Sliding indicator */}
+              <div
+                className="demo-tabs-indicator"
+                style={{
+                  transform: `translateX(${tabs.findIndex(t => t.id === activeTab) * 100}%)`,
+                  width: `${100 / tabs.length}%`,
+                }}
+              />
               {tabs.map((tab) => (
                 <button
                   key={tab.id}

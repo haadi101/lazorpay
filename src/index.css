@@ -211,16 +211,32 @@ body {
 .demo-tabs {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
+  position: relative;
+  gap: 0;
   margin-bottom: 2rem;
-  padding: 0.5rem;
+  padding: 0.375rem;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  overflow-x: auto;
+  overflow: hidden;
+}
+
+/* Sliding indicator - the purple gradient pill */
+.demo-tabs-indicator {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.375rem;
+  bottom: 0.375rem;
+  background: var(--accent-gradient);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
 }
 
 .demo-tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -233,19 +249,18 @@ body {
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease;
   white-space: nowrap;
+  flex: 1;
 }
 
 .demo-tab:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .demo-tab-active {
   color: var(--text-primary);
-  background: var(--accent-gradient);
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  /* No background - the indicator handles it */
 }
 
 .tab-icon {
