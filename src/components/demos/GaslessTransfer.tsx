@@ -17,10 +17,16 @@ import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { useTransaction } from '../../hooks/useTransaction';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { getExplorerUrl } from '../../config/lazorkit';
 import './demos.css';
+
+// Local transaction state interface
+interface TransactionState {
+    isLoading: boolean;
+    error: string | null;
+    signature: string | null;
+}
 
 // =============================================================================
 // COMPONENT
@@ -30,66 +36,73 @@ export function GaslessTransfer() {
     // Use patched wallet for enhanced error handling
     const { smartWalletPubkey, isConnected } = useWallet();
     const { signAndSendTransaction } = usePatchedWallet();
-    const { execute, isLoading, error, lastSignature } = useTransaction();
 
-    // Debug log for render
-    console.log('🔄 GaslessTransfer Render:', { isLoading, hasSignature: !!lastSignature, error });
+    // Local state for 100% reliable UI updates
+    const [txState, setTxState] = useState<TransactionState>({
+        isLoading: false,
+        error: null,
+        signature: null,
+    });
 
     // Form state
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('0.001');
-    const [isSending, setIsSending] = useState(false); // Local loading state fallback
 
     /**
      * Handle SOL transfer
-     * 
-     * This demonstrates the core gasless transaction flow:
-     * 1. Build transaction instructions
-     * 2. Call signAndSendTransaction
-     * 3. User authenticates with passkey
-     * 4. Paymaster sponsors gas, transaction is sent
      */
     const handleTransfer = async () => {
         console.log('▶️ handleTransfer started');
         if (!smartWalletPubkey || !recipient) return;
 
-        setIsSending(true); // Start local loading
+        // Reset state and start loading
+        setTxState({
+            isLoading: true,
+            error: null,
+            signature: null,
+        });
 
         try {
-            await execute(async () => {
-                console.log('⚡ execute callback started');
-                // Validate recipient address
-                let destinationPubkey: PublicKey;
-                try {
-                    destinationPubkey = new PublicKey(recipient);
-                } catch {
-                    throw new Error('Invalid recipient address');
-                }
+            console.log('⚡ Starting transaction flow...');
+            // Validate recipient address
+            let destinationPubkey: PublicKey;
+            try {
+                destinationPubkey = new PublicKey(recipient);
+            } catch {
+                throw new Error('Invalid recipient address');
+            }
 
-                // Create transfer instruction
-                const instruction = SystemProgram.transfer({
-                    fromPubkey: smartWalletPubkey,
-                    toPubkey: destinationPubkey,
-                    lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
-                });
+            // Create transfer instruction
+            const instruction = SystemProgram.transfer({
+                fromPubkey: smartWalletPubkey,
+                toPubkey: destinationPubkey,
+                lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
+            });
 
-                // Sign and send with paymaster
-                // The paymaster URL is configured in LazorkitProvider
-                const signature = await signAndSendTransaction({
-                    instructions: [instruction],
-                    transactionOptions: {
-                        // Optional: Pay gas in USDC instead of having paymaster fully sponsor
-                        // feeToken: 'USDC',
-                    },
-                });
+            // Sign and send with paymaster
+            const sig = await signAndSendTransaction({
+                instructions: [instruction],
+                transactionOptions: {},
+            });
 
-                return signature;
-            }, 'transfer', `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`);
-        } catch (e) {
-            console.error('Transfer failed locally:', e);
-        } finally {
-            setIsSending(false); // End local loading
-            console.log('⏹️ handleTransfer finished - Local loading state cleared');
+            console.log('✅ Transaction confirmed in component:', sig);
+
+            // Update state with success (FORCE UPDATE)
+            setTxState({
+                isLoading: false,
+                error: null,
+                signature: sig,
+            });
+
+        } catch (err) {
+            console.error('❌ Transfer failed:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
+
+            setTxState({
+                isLoading: false,
+                error: errorMessage,
+                signature: null,
+            });
         }
     };
 
@@ -108,18 +121,12 @@ export function GaslessTransfer() {
         );
     }
 
-    // Determine loading state (track either hook or local state)
-    const showLoading = isLoading || isSending;
-
     return (
         <Card
             title="💸 Gasless SOL Transfer"
             subtitle="Send SOL without paying gas fees"
             className="demo-card"
         >
-            {/* Debug State */}
-            {/* <div style={{fontSize: 10, opacity: 0.5}}>State: {showLoading ? 'Loading' : 'Idle'} (Hook: {isLoading ? 'T' : 'F'}, Local: {isSending ? 'T' : 'F'})</div> */}
-
             {/* Transfer Form */}
             <div className="demo-section">
                 <h4 className="demo-section-title">Send SOL</h4>
@@ -147,30 +154,30 @@ export function GaslessTransfer() {
                     <Button
                         variant="primary"
                         fullWidth
-                        isLoading={showLoading}
+                        isLoading={txState.isLoading}
                         onClick={handleTransfer}
                         disabled={!recipient || !amount}
                     >
-                        {showLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
+                        {txState.isLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
                     </Button>
                 </div>
             </div>
 
             {/* Error Display */}
-            {error && (
+            {txState.error && (
                 <div className="demo-error">
-                    <strong>Error:</strong> {error}
+                    <strong>Error:</strong> {txState.error}
                 </div>
             )}
 
             {/* Success Display */}
-            {lastSignature && (
+            {txState.signature && (
                 <div className="demo-success">
                     <div className="success-icon">✓</div>
                     <div className="success-content">
                         <h5>Transfer Successful!</h5>
                         <a
-                            href={getExplorerUrl(lastSignature)}
+                            href={getExplorerUrl(txState.signature)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="explorer-link"
