@@ -1,0 +1,405 @@
+/**
+ * Demo Components Shared Styles
+ */
+
+/* =============================================================================
+   DEMO CARD
+   ============================================================================= */
+
+.demo-card {
+    max-width: 600px;
+    width: 100%;
+}
+
+.demo-card-featured {
+    position: relative;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.demo-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    background: var(--accent-gradient);
+    border-radius: 9999px;
+}
+
+/* =============================================================================
+   DEMO SECTIONS
+   ============================================================================= */
+
+.demo-section {
+    margin-bottom: 1.5rem;
+}
+
+.demo-section:last-child {
+    margin-bottom: 0;
+}
+
+.demo-section-title {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.demo-description {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* =============================================================================
+   DEMO STEPS
+   ============================================================================= */
+
+.demo-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.demo-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 0.875rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.demo-step-pending {
+    opacity: 0.5;
+}
+
+.demo-step-active {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.demo-step-complete {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.demo-step-complete .step-number {
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.step-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.step-description {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   DEMO FORM
+   ============================================================================= */
+
+.demo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.demo-action {
+    text-align: center;
+}
+
+.demo-hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   DEMO CONNECT PROMPT
+   ============================================================================= */
+
+.demo-connect-prompt {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   DEMO SUCCESS / ERROR
+   ============================================================================= */
+
+.demo-success {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 12px;
+}
+
+.success-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.2);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.success-content {
+    flex: 1;
+}
+
+.success-content h5 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.success-content p {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.success-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.explorer-link {
+    font-size: 0.875rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.explorer-link:hover {
+    text-decoration: underline;
+}
+
+.wallet-address-code {
+    display: block;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-family: 'SF Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    word-break: break-all;
+}
+
+.demo-error {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    color: var(--error);
+}
+
+.error-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    opacity: 0.8;
+}
+
+/* =============================================================================
+   DEMO INFO GRID
+   ============================================================================= */
+
+.demo-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.info-icon {
+    font-size: 1.125rem;
+}
+
+.info-text {
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   DEMO CODE BLOCK
+   ============================================================================= */
+
+.demo-code-block {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.demo-code-block pre {
+    margin: 0;
+    padding: 1rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    overflow-x: auto;
+}
+
+/* =============================================================================
+   SIGNATURE RESULT
+   ============================================================================= */
+
+.signature-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.signature-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.signature-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.signature-value {
+    font-family: 'SF Mono', monospace;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.signature-long {
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+/* =============================================================================
+   DEMO FLOW
+   ============================================================================= */
+
+.demo-flow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+.flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem;
+    min-width: 80px;
+    text-align: center;
+}
+
+.flow-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    background: var(--accent-primary);
+    border-radius: 50%;
+}
+
+.flow-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.flow-arrow {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.demo-flow-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.875rem;
+    color: var(--accent-primary);
+    text-align: center;
+}
+
+/* =============================================================================
+   RESPONSIVE
+   ============================================================================= */
+
+@media (max-width: 480px) {
+    .demo-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .demo-flow {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .flow-arrow {
+        display: none;
+    }
+}

@@ -1,0 +1,98 @@
+/**
+ * Card Component Styles
+ * 
+ * Glassmorphism design with subtle borders and backdrop blur.
+ */
+
+/* =============================================================================
+   BASE CARD
+   ============================================================================= */
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+/* =============================================================================
+   CARD HEADER
+   ============================================================================= */
+
+.card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   CARD CONTENT
+   ============================================================================= */
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-header+.card-content {
+    padding-top: 1.25rem;
+}
+
+/* =============================================================================
+   INTERACTIVE CARD
+   ============================================================================= */
+
+.card-interactive {
+    cursor: pointer;
+}
+
+.card-interactive:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.card-interactive:active {
+    transform: translateY(0);
+}
+
+.card-interactive:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* =============================================================================
+   GLOW EFFECT
+   ============================================================================= */
+
+.card-glow {
+    position: relative;
+}
+
+.card-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    background: var(--accent-gradient);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.card-glow:hover::before {
+    opacity: 0.5;
+    filter: blur(15px);
+}

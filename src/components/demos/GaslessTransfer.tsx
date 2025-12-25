@@ -1,0 +1,207 @@
+/**
+ * GaslessTransfer Component
+ * 
+ * Demonstrates gasless SOL transfers using the LazorKit paymaster.
+ * Users can send SOL without holding SOL for gas fees!
+ * 
+ * Key Learning Points:
+ * 1. Paymaster sponsors gas fees
+ * 2. User signs with passkey
+ * 3. Transaction is executed on-chain
+ * 4. No SOL needed for gas (can pay in USDC instead)
+ */
+
+import { useState } from 'react';
+import { useWallet } from '@lazorkit/wallet';
+import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { useTransaction } from '../../hooks/useTransaction';
+import { usePatchedWallet } from '../../hooks/usePatchedWallet';
+import { getExplorerUrl } from '../../config/lazorkit';
+import './demos.css';
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
+export function GaslessTransfer() {
+    // Use patched wallet for enhanced error handling
+    const { smartWalletPubkey, isConnected } = useWallet();
+    const { signAndSendTransaction } = usePatchedWallet();
+    const { execute, isLoading, error, lastSignature } = useTransaction();
+
+    // Form state
+    const [recipient, setRecipient] = useState('');
+    const [amount, setAmount] = useState('0.001');
+
+    /**
+     * Handle SOL transfer
+     * 
+     * This demonstrates the core gasless transaction flow:
+     * 1. Build transaction instructions
+     * 2. Call signAndSendTransaction
+     * 3. User authenticates with passkey
+     * 4. Paymaster sponsors gas, transaction is sent
+     */
+    const handleTransfer = async () => {
+        if (!smartWalletPubkey || !recipient) return;
+
+        await execute(async () => {
+            // Validate recipient address
+            let destinationPubkey: PublicKey;
+            try {
+                destinationPubkey = new PublicKey(recipient);
+            } catch {
+                throw new Error('Invalid recipient address');
+            }
+
+            // Create transfer instruction
+            const instruction = SystemProgram.transfer({
+                fromPubkey: smartWalletPubkey,
+                toPubkey: destinationPubkey,
+                lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
+            });
+
+            // Sign and send with paymaster
+            // The paymaster URL is configured in LazorkitProvider
+            const signature = await signAndSendTransaction({
+                instructions: [instruction],
+                transactionOptions: {
+                    // Optional: Pay gas in USDC instead of having paymaster fully sponsor
+                    // feeToken: 'USDC',
+                },
+            });
+
+            return signature;
+        }, 'transfer', `Sent ${amount} SOL to ${recipient.slice(0, 8)}...`);
+    };
+
+    // Show connect prompt if not connected
+    if (!isConnected) {
+        return (
+            <Card
+                title="💸 Gasless SOL Transfer"
+                subtitle="Send SOL without paying gas fees"
+                className="demo-card"
+            >
+                <div className="demo-connect-prompt">
+                    <p>Connect your wallet to try gasless transfers</p>
+                </div>
+            </Card>
+        );
+    }
+
+    return (
+        <Card
+            title="💸 Gasless SOL Transfer"
+            subtitle="Send SOL without paying gas fees"
+            className="demo-card"
+        >
+            {/* Transfer Form */}
+            <div className="demo-section">
+                <h4 className="demo-section-title">Send SOL</h4>
+
+                <div className="demo-form">
+                    <Input
+                        label="Recipient Address"
+                        placeholder="Enter Solana address..."
+                        value={recipient}
+                        onChange={(e) => setRecipient(e.target.value)}
+                        helperText="Any valid Solana address on Devnet"
+                    />
+
+                    <Input
+                        label="Amount (SOL)"
+                        type="number"
+                        step="0.001"
+                        min="0.001"
+                        placeholder="0.001"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        helperText="Minimum: 0.001 SOL"
+                    />
+
+                    <Button
+                        variant="primary"
+                        fullWidth
+                        isLoading={isLoading}
+                        onClick={handleTransfer}
+                        disabled={!recipient || !amount}
+                    >
+                        {isLoading ? 'Signing with Passkey...' : 'Send Gasless Transfer'}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+                <div className="demo-error">
+                    <strong>Error:</strong> {error}
+                </div>
+            )}
+
+            {/* Success Display */}
+            {lastSignature && (
+                <div className="demo-success">
+                    <div className="success-icon">✓</div>
+                    <div className="success-content">
+                        <h5>Transfer Successful!</h5>
+                        <a
+                            href={getExplorerUrl(lastSignature)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="explorer-link"
+                        >
+                            View on Solana Explorer ↗
+                        </a>
+                    </div>
+                </div>
+            )}
+
+            {/* How It Works */}
+            <div className="demo-section">
+                <h4 className="demo-section-title">How Gasless Works</h4>
+                <div className="demo-info-grid">
+                    <div className="info-item">
+                        <span className="info-icon">1️⃣</span>
+                        <span className="info-text">You build the transaction</span>
+                    </div>
+                    <div className="info-item">
+                        <span className="info-icon">2️⃣</span>
+                        <span className="info-text">Sign with your passkey</span>
+                    </div>
+                    <div className="info-item">
+                        <span className="info-icon">3️⃣</span>
+                        <span className="info-text">Paymaster pays gas fee</span>
+                    </div>
+                    <div className="info-item">
+                        <span className="info-icon">4️⃣</span>
+                        <span className="info-text">Transaction confirmed!</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Code Example */}
+            <div className="demo-section">
+                <h4 className="demo-section-title">Code Example</h4>
+                <div className="demo-code-block">
+                    <pre>{`const { signAndSendTransaction, smartWalletPubkey } = useWallet();
+
+// Create transfer instruction
+const instruction = SystemProgram.transfer({
+  fromPubkey: smartWalletPubkey,
+  toPubkey: new PublicKey(recipient),
+  lamports: 0.001 * LAMPORTS_PER_SOL,
+});
+
+// Sign and send - gas is sponsored!
+const signature = await signAndSendTransaction({
+  instructions: [instruction],
+});`}</pre>
+                </div>
+            </div>
+        </Card>
+    );
+}

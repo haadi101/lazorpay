@@ -1,0 +1,124 @@
+/**
+ * Input Component Styles
+ */
+
+/* =============================================================================
+   WRAPPER
+   ============================================================================= */
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-full {
+    width: 100%;
+}
+
+/* =============================================================================
+   LABEL
+   ============================================================================= */
+
+.input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* =============================================================================
+   INPUT CONTAINER
+   ============================================================================= */
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.input-field:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* With icons */
+.input-container:has(.input-icon-left) .input-field {
+    padding-left: 2.75rem;
+}
+
+.input-container:has(.input-icon-right) .input-field {
+    padding-right: 2.75rem;
+}
+
+/* =============================================================================
+   ICONS
+   ============================================================================= */
+
+.input-icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.input-icon-left {
+    left: 1rem;
+}
+
+.input-icon-right {
+    right: 1rem;
+}
+
+/* =============================================================================
+   HELPER TEXT
+   ============================================================================= */
+
+.input-helper {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.input-helper-error {
+    color: var(--error);
+}
+
+/* =============================================================================
+   ERROR STATE
+   ============================================================================= */
+
+.input-error .input-field {
+    border-color: var(--error);
+}
+
+.input-error .input-field:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}

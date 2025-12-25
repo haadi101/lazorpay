@@ -1,0 +1,15 @@
+name: lazorpay-starter
+services:
+  - name: web
+    github:
+      repo: YOUR_GITHUB_USERNAME/lazorpay-starter
+      branch: main
+      deploy_on_push: true
+    build_command: npm run build
+    run_command: npx serve dist -s -l 8080
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    http_port: 8080
+    routes:
+      - path: /

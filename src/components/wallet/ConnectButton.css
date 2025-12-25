@@ -1,0 +1,71 @@
+/**
+ * ConnectButton Styles
+ */
+
+.connect-button-connected {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* =============================================================================
+   WALLET ADDRESS PILL
+   ============================================================================= */
+
+.wallet-address-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 9999px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.875rem;
+}
+
+.wallet-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+.wallet-address {
+    color: var(--text-primary);
+}
+
+/* =============================================================================
+   MOBILE RESPONSIVE
+   ============================================================================= */
+
+@media (max-width: 480px) {
+    .connect-button-connected {
+        gap: 0.5rem;
+    }
+
+    .wallet-address-pill {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.75rem;
+    }
+
+    .wallet-dot {
+        width: 6px;
+        height: 6px;
+    }
+}

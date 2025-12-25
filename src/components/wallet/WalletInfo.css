@@ -1,0 +1,142 @@
+/**
+ * WalletInfo Styles
+ */
+
+.wallet-info {
+    max-width: 400px;
+}
+
+/* =============================================================================
+   HEADER
+   ============================================================================= */
+
+.wallet-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.wallet-info-balance {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.balance-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.balance-value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.375rem;
+}
+
+.balance-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.balance-symbol {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.balance-loading {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.wallet-info-network {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: 9999px;
+}
+
+.network-dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+/* =============================================================================
+   DETAILS
+   ============================================================================= */
+
+.wallet-info-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.wallet-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.row-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.row-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.row-mono {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8125rem;
+}
+
+.row-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.row-link:hover {
+    color: var(--accent-secondary);
+}
+
+.link-icon {
+    font-size: 0.75em;
+    opacity: 0.7;
+}
+
+/* =============================================================================
+   FOOTER
+   ============================================================================= */
+
+.wallet-info-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.wallet-info-footer p {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
