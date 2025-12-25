@@ -8,20 +8,11 @@
  */
 
 import { useWallet } from '@lazorkit/wallet';
-import { useEffect, useState } from 'react';
-import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { useState } from 'react';
 import { Card } from '../ui/Card';
 import { ACTIVE_NETWORK, getAccountExplorerUrl, truncateAddress } from '../../config/lazorkit';
+import { useSolanaBalance } from '../../hooks/useSolanaBalance';
 import './WalletInfo.css';
-
-// =============================================================================
-// TYPES
-// =============================================================================
-
-interface WalletBalance {
-    sol: number;
-    isLoading: boolean;
-}
 
 // =============================================================================
 // COMPONENT
@@ -29,8 +20,14 @@ interface WalletBalance {
 
 export function WalletInfo() {
     const { wallet, isConnected, smartWalletPubkey } = useWallet();
-    const [balance, setBalance] = useState<WalletBalance>({ sol: 0, isLoading: true });
     const [copied, setCopied] = useState(false);
+
+    // Use the production-grade balance hook
+    const { sol, isLoading, error, refresh } = useSolanaBalance(smartWalletPubkey, {
+        refreshInterval: 60000, // Refresh every 60 seconds
+        maxRetries: 3,
+        autoRefresh: true,
+    });
 
     // Copy wallet address to clipboard
     const copyAddress = async () => {
@@ -45,69 +42,6 @@ export function WalletInfo() {
         }
     };
 
-    // Fetch SOL balance when wallet connects
-    useEffect(() => {
-        if (!smartWalletPubkey) {
-            setBalance({ sol: 0, isLoading: false });
-            return;
-        }
-
-        let isMounted = true;
-        let retryCount = 0;
-        const maxRetries = 3;
-        let refreshTimer: ReturnType<typeof setTimeout>;
-
-        const fetchBalance = async (isInitial = false) => {
-            // Show loading only on initial fetch
-            if (isInitial) {
-                setBalance(prev => ({ ...prev, isLoading: true }));
-            }
-
-            try {
-                const connection = new Connection(ACTIVE_NETWORK.rpcUrl, {
-                    commitment: 'confirmed',
-                    confirmTransactionInitialTimeout: 10000,
-                });
-                const lamports = await connection.getBalance(smartWalletPubkey);
-
-                if (isMounted) {
-                    setBalance({ sol: lamports / LAMPORTS_PER_SOL, isLoading: false });
-                    retryCount = 0; // Reset on success
-
-                    // Schedule next refresh (60 seconds to avoid rate limits)
-                    refreshTimer = setTimeout(() => fetchBalance(false), 60000);
-                }
-            } catch (err) {
-                if (isMounted) {
-                    setBalance(prev => ({ ...prev, isLoading: false }));
-
-                    // Exponential backoff retry
-                    if (retryCount < maxRetries) {
-                        retryCount++;
-                        const delay = Math.min(5000 * Math.pow(2, retryCount), 30000);
-                        console.warn(`Balance fetch retry ${retryCount}/${maxRetries} in ${delay / 1000}s`);
-                        refreshTimer = setTimeout(() => fetchBalance(false), delay);
-                    } else {
-                        // After max retries, wait longer before trying again
-                        console.warn('Balance fetch failed after retries, will try again in 2 minutes');
-                        refreshTimer = setTimeout(() => {
-                            retryCount = 0;
-                            fetchBalance(false);
-                        }, 120000);
-                    }
-                }
-            }
-        };
-
-        // Initial fetch
-        fetchBalance(true);
-
-        return () => {
-            isMounted = false;
-            if (refreshTimer) clearTimeout(refreshTimer);
-        };
-    }, [smartWalletPubkey]);
-
     // Don't render if not connected
     if (!isConnected || !wallet) {
         return null;
@@ -120,11 +54,11 @@ export function WalletInfo() {
                 <div className="wallet-info-balance">
                     <span className="balance-label">Smart Wallet Balance</span>
                     <span className="balance-value">
-                        {balance.isLoading ? (
+                        {isLoading ? (
                             <span className="balance-skeleton" />
                         ) : (
                             <>
-                                <span className="balance-amount">{balance.sol.toFixed(4)}</span>
+                                <span className="balance-amount">{sol.toFixed(4)}</span>
                                 <span className="balance-symbol">SOL</span>
                             </>
                         )}
