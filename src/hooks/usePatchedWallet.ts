@@ -76,20 +76,33 @@ export function usePatchedWallet() {
     }, [wallet.signMessage]);
 
     /**
-     * Enhanced signAndSendTransaction with logging
+     * Enhanced signAndSendTransaction with logging and timeout
      * 
      * The SDK handles signing internally, so we can't patch the signature here.
      * Instead, we add logging to help debug transaction issues.
      */
-    const patchedSignAndSendTransaction = useCallback(async (payload: Parameters<typeof wallet.signAndSendTransaction>[0]) => {
+    const patchedSignAndSendTransaction = useCallback(async (payload: Parameters<typeof wallet.signAndSendTransaction>[0]): Promise<string> => {
         console.log('🔧 usePatchedWallet: Sending transaction...', {
             instructionCount: payload.instructions?.length ?? 0,
         });
 
         try {
-            const signature = await wallet.signAndSendTransaction(payload);
-            console.log('✅ usePatchedWallet: Transaction confirmed:', signature);
-            return signature;
+            // Add timeout to prevent infinite loading
+            const timeoutMs = 120000; // 2 minutes
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => reject(new Error('Transaction timed out after 2 minutes')), timeoutMs);
+            });
+
+            const signature = await Promise.race([
+                wallet.signAndSendTransaction(payload),
+                timeoutPromise,
+            ]);
+
+            // Ensure we have a valid signature string
+            const sigString = typeof signature === 'string' ? signature : String(signature);
+
+            console.log('✅ usePatchedWallet: Transaction confirmed:', sigString);
+            return sigString;
         } catch (error) {
             console.error('❌ usePatchedWallet: Transaction failed:', error);
 
@@ -114,7 +127,7 @@ export function usePatchedWallet() {
 
             throw error;
         }
-    }, [wallet.signAndSendTransaction]);
+    }, [wallet]);
 
     // Return the wallet with patched methods
     return {
