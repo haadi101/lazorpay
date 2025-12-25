@@ -53,42 +53,58 @@ export function WalletInfo() {
         }
 
         let isMounted = true;
-        let hasLoggedError = false;
+        let retryCount = 0;
+        const maxRetries = 3;
+        let refreshTimer: ReturnType<typeof setTimeout>;
 
-        const fetchBalance = async () => {
-            // Don't show loading on refresh to prevent flicker
-            if (balance.sol === 0 && !hasLoggedError) {
+        const fetchBalance = async (isInitial = false) => {
+            // Show loading only on initial fetch
+            if (isInitial) {
                 setBalance(prev => ({ ...prev, isLoading: true }));
             }
 
             try {
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, {
                     commitment: 'confirmed',
+                    confirmTransactionInitialTimeout: 10000,
                 });
                 const lamports = await connection.getBalance(smartWalletPubkey);
+
                 if (isMounted) {
                     setBalance({ sol: lamports / LAMPORTS_PER_SOL, isLoading: false });
-                    hasLoggedError = false; // Reset on success
+                    retryCount = 0; // Reset on success
+
+                    // Schedule next refresh (60 seconds to avoid rate limits)
+                    refreshTimer = setTimeout(() => fetchBalance(false), 60000);
                 }
-            } catch {
-                // Only log error once to prevent console spam
-                if (!hasLoggedError) {
-                    console.warn('Balance fetch failed - RPC may be rate limited');
-                    hasLoggedError = true;
-                }
+            } catch (err) {
                 if (isMounted) {
                     setBalance(prev => ({ ...prev, isLoading: false }));
+
+                    // Exponential backoff retry
+                    if (retryCount < maxRetries) {
+                        retryCount++;
+                        const delay = Math.min(5000 * Math.pow(2, retryCount), 30000);
+                        console.warn(`Balance fetch retry ${retryCount}/${maxRetries} in ${delay / 1000}s`);
+                        refreshTimer = setTimeout(() => fetchBalance(false), delay);
+                    } else {
+                        // After max retries, wait longer before trying again
+                        console.warn('Balance fetch failed after retries, will try again in 2 minutes');
+                        refreshTimer = setTimeout(() => {
+                            retryCount = 0;
+                            fetchBalance(false);
+                        }, 120000);
+                    }
                 }
             }
         };
 
-        fetchBalance();
+        // Initial fetch
+        fetchBalance(true);
 
-        // Refresh balance every 30 seconds (slower to avoid rate limits)
-        const interval = setInterval(fetchBalance, 30000);
         return () => {
             isMounted = false;
-            clearInterval(interval);
+            if (refreshTimer) clearTimeout(refreshTimer);
         };
     }, [smartWalletPubkey]);
 
