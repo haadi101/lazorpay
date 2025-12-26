@@ -30,6 +30,7 @@ import {
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Coins, CheckCircle, ChevronRight, Star } from 'lucide-react';
 import { useTransaction } from '../../hooks/useTransaction';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { ACTIVE_NETWORK, getExplorerUrl, getAccountExplorerUrl } from '../../config/lazorkit';
@@ -132,9 +133,10 @@ export function SponsoredMint() {
     if (!isConnected) {
         return (
             <Card
-                title="🪙 Sponsored Token Mint"
+                title="Sponsored Token Mint"
                 subtitle="Create your own SPL token - gaslessly!"
                 className="demo-card demo-card-featured"
+                icon={<Coins size={18} strokeWidth={1.5} className="text-zinc-400" />}
             >
                 <div className="demo-connect-prompt">
                     <p>Connect your wallet to mint your own token</p>
@@ -145,13 +147,13 @@ export function SponsoredMint() {
 
     return (
         <Card
-            title="🪙 Sponsored Token Mint"
+            title="Sponsored Token Mint"
             subtitle="Create your own SPL token - gaslessly!"
             className="demo-card demo-card-featured"
-            glow
+            icon={<Coins size={18} strokeWidth={1.5} className="text-zinc-400" />}
         >
             {/* Featured Badge */}
-            <div className="demo-badge">⭐ Advanced Demo</div>
+            <div className="demo-badge"><Star size={12} strokeWidth={1.5} className="inline mr-1" />Advanced Demo</div>
 
             {/* Why This Matters */}
             <div className="demo-section">
@@ -190,7 +192,7 @@ export function SponsoredMint() {
                         isLoading={isLoading}
                         onClick={handleMint}
                     >
-                        {isLoading ? 'Minting Token...' : '🪙 Mint New Token (Gasless)'}
+                        {isLoading ? 'Minting Token...' : 'Mint New Token (Gasless)'}
                     </Button>
                 </div>
             </div>
@@ -209,7 +211,7 @@ export function SponsoredMint() {
             {/* Success Display */}
             {lastSignature && mintAddress && (
                 <div className="demo-success">
-                    <div className="success-icon">✓</div>
+                    <div className="success-icon"><CheckCircle size={20} strokeWidth={1.5} /></div>
                     <div className="success-content">
                         <h5>Token Created!</h5>
                         <div className="success-links">
@@ -242,24 +244,24 @@ export function SponsoredMint() {
                         <span className="flow-number">1</span>
                         <span className="flow-text">Create mint account</span>
                     </div>
-                    <div className="flow-arrow">→</div>
+                    <div className="flow-arrow"><ChevronRight size={16} strokeWidth={1.5} /></div>
                     <div className="flow-step">
                         <span className="flow-number">2</span>
                         <span className="flow-text">Initialize mint</span>
                     </div>
-                    <div className="flow-arrow">→</div>
+                    <div className="flow-arrow"><ChevronRight size={16} strokeWidth={1.5} /></div>
                     <div className="flow-step">
                         <span className="flow-number">3</span>
                         <span className="flow-text">Create token account</span>
                     </div>
-                    <div className="flow-arrow">→</div>
+                    <div className="flow-arrow"><ChevronRight size={16} strokeWidth={1.5} /></div>
                     <div className="flow-step">
                         <span className="flow-number">4</span>
                         <span className="flow-text">Mint tokens</span>
                     </div>
                 </div>
                 <p className="demo-flow-note">
-                    All 4 instructions in 1 gasless transaction! ⚡
+                    All 4 instructions in 1 gasless transaction!
                 </p>
             </div>
         </Card>

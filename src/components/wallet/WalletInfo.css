@@ -189,9 +189,18 @@
    ============================================================================= */
 
 .wallet-info-footer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border-subtle);
+}
+
+.footer-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    margin-top: 0.125rem;
 }
 
 .wallet-info-footer p {

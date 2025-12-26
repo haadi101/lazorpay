@@ -15,6 +15,7 @@
 import { useWallet } from '@lazorkit/wallet';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { Fingerprint, Check, CheckCircle } from 'lucide-react';
 import './demos.css';
 
 // =============================================================================
@@ -54,9 +55,10 @@ export function PasskeyDemo() {
 
     return (
         <Card
-            title="🔐 Passkey Authentication"
+            title="Passkey Authentication"
             subtitle="Seed phrase-free login with biometrics"
             className="demo-card"
+            icon={<Fingerprint size={18} strokeWidth={1.5} className="text-zinc-400" />}
         >
             {/* How It Works Section */}
             <div className="demo-section">
@@ -69,7 +71,7 @@ export function PasskeyDemo() {
                             className={`demo-step demo-step-${step.status}`}
                         >
                             <div className="step-number">
-                                {step.status === 'complete' ? '✓' : step.number}
+                                {step.status === 'complete' ? <Check size={14} strokeWidth={2} /> : step.number}
                             </div>
                             <div className="step-content">
                                 <span className="step-title">{step.title}</span>
@@ -92,7 +94,7 @@ export function PasskeyDemo() {
                             fullWidth
                             isLoading={isConnecting}
                             onClick={() => connect({ feeMode: 'paymaster' })}
-                            leftIcon={!isConnecting && <span>🔐</span>}
+                            leftIcon={!isConnecting && <Fingerprint size={18} strokeWidth={1.5} />}
                         >
                             {isConnecting ? 'Opening Passkey Portal...' : 'Connect with Passkey'}
                         </Button>
@@ -102,7 +104,7 @@ export function PasskeyDemo() {
                     </div>
                 ) : (
                     <div className="demo-success">
-                        <div className="success-icon">✓</div>
+                        <div className="success-icon"><CheckCircle size={20} strokeWidth={1.5} /></div>
                         <div className="success-content">
                             <h5>Successfully Connected!</h5>
                             <p>Your smart wallet address:</p>

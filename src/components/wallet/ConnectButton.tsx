@@ -18,6 +18,7 @@
 
 import { useWallet } from '@lazorkit/wallet';
 import { Button } from '../ui/Button';
+import { Fingerprint } from 'lucide-react';
 import { truncateAddress } from '../../config/lazorkit';
 import './ConnectButton.css';
 
@@ -120,7 +121,7 @@ export function ConnectButton() {
             size="md"
             onClick={handleConnect}
             isLoading={isConnecting}
-            leftIcon={!isConnecting && <span>🔐</span>}
+            leftIcon={!isConnecting && <Fingerprint size={18} strokeWidth={1.5} />}
         >
             {isConnecting ? 'Authenticating...' : 'Connect with Passkey'}
         </Button>

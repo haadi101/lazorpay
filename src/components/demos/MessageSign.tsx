@@ -19,6 +19,7 @@ import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { PenLine, KeyRound, FileText, Ticket, BadgeCheck } from 'lucide-react';
 import './demos.css';
 
 // =============================================================================
@@ -30,7 +31,7 @@ export function MessageSign() {
     const { isConnected, wallet } = useWallet();
     const { signMessage } = usePatchedWallet();
 
-    const [message, setMessage] = useState('Hello from LazorKit! 🚀');
+    const [message, setMessage] = useState('Hello from LazorKit!');
     const [signature, setSignature] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -67,9 +68,10 @@ export function MessageSign() {
     if (!isConnected) {
         return (
             <Card
-                title="✍️ Message Signing"
+                title="Message Signing"
                 subtitle="Sign arbitrary messages with your passkey"
                 className="demo-card"
+                icon={<PenLine size={18} strokeWidth={1.5} className="text-zinc-400" />}
             >
                 <div className="demo-connect-prompt">
                     <p>Connect your wallet to try message signing</p>
@@ -80,9 +82,10 @@ export function MessageSign() {
 
     return (
         <Card
-            title="✍️ Message Signing"
+            title="Message Signing"
             subtitle="Sign arbitrary messages with your passkey"
             className="demo-card"
+            icon={<PenLine size={18} strokeWidth={1.5} className="text-zinc-400" />}
         >
             {/* Sign Form */}
             <div className="demo-section">
@@ -142,19 +145,19 @@ export function MessageSign() {
                 <h4 className="demo-section-title">Use Cases</h4>
                 <div className="demo-info-grid">
                     <div className="info-item">
-                        <span className="info-icon">🔑</span>
+                        <span className="info-icon"><KeyRound size={16} strokeWidth={1.5} /></span>
                         <span className="info-text">Login verification</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">📝</span>
+                        <span className="info-icon"><FileText size={16} strokeWidth={1.5} /></span>
                         <span className="info-text">Terms acceptance</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">🎫</span>
+                        <span className="info-icon"><Ticket size={16} strokeWidth={1.5} /></span>
                         <span className="info-text">NFT claims</span>
                     </div>
                     <div className="info-item">
-                        <span className="info-icon">✅</span>
+                        <span className="info-icon"><BadgeCheck size={16} strokeWidth={1.5} /></span>
                         <span className="info-text">Ownership proof</span>
                     </div>
                 </div>

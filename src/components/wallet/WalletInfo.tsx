@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Card } from '../ui/Card';
 import { ACTIVE_NETWORK, getAccountExplorerUrl, truncateAddress } from '../../config/lazorkit';
 import { useSolanaBalance } from '../../hooks/useSolanaBalance';
+import { Copy, Check, ExternalLink, Info } from 'lucide-react';
 import './WalletInfo.css';
 
 // =============================================================================
@@ -48,7 +49,7 @@ export function WalletInfo() {
     }
 
     return (
-        <Card className="wallet-info" glow>
+        <Card className="wallet-info">
             {/* Header with balance */}
             <div className="wallet-info-header">
                 <div className="wallet-info-balance">
@@ -83,14 +84,18 @@ export function WalletInfo() {
                             className="row-value row-link"
                         >
                             {truncateAddress(wallet.smartWallet, 8)}
-                            <span className="link-icon">↗</span>
+                            <ExternalLink size={12} strokeWidth={1.5} className="link-icon" />
                         </a>
                         <button
                             className={`copy-btn ${copied ? 'copied' : ''}`}
                             onClick={copyAddress}
                             title="Copy address"
                         >
-                            {copied ? '✓' : '📋'}
+                            {copied ? (
+                                <Check size={14} strokeWidth={2} />
+                            ) : (
+                                <Copy size={14} strokeWidth={1.5} />
+                            )}
                         </button>
                     </div>
                 </div>
@@ -120,11 +125,13 @@ export function WalletInfo() {
 
             {/* Info footer */}
             <div className="wallet-info-footer">
+                <Info size={14} strokeWidth={1.5} className="footer-icon" />
                 <p>
-                    💡 This smart wallet is controlled by your passkey.
-                    No seed phrase needed!
+                    This smart wallet is controlled by your passkey.
+                    No seed phrase needed.
                 </p>
             </div>
         </Card>
     );
 }
+
