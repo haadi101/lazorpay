@@ -49,11 +49,8 @@ export function ConnectButton() {
      */
     const handleConnect = async () => {
         try {
-            console.log('🔐 Starting connection...');
-            const result = await connect({ feeMode: 'paymaster' });
-            console.log('✅ Connected successfully:', result);
+            await connect({ feeMode: 'paymaster' });
         } catch (error: unknown) {
-            console.error('❌ Failed to connect:', error);
 
             // Provide user-friendly error messages
             const errorMessage = error instanceof Error ? error.message : String(error);

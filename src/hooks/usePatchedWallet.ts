@@ -62,7 +62,6 @@ export function usePatchedWallet() {
             const sigBytes = Uint8Array.from(atob(result.signature), c => c.charCodeAt(0));
 
             if (isHighS(sigBytes)) {
-                console.log('🔧 Detected High-S signature, normalizing...');
                 const normalizedBytes = normalizeSignature(sigBytes);
                 const normalizedBase64 = btoa(String.fromCharCode(...normalizedBytes));
 
@@ -88,19 +87,12 @@ export function usePatchedWallet() {
         payload: Parameters<typeof wallet.signAndSendTransaction>[0]
     ): Promise<string> => {
         const MAX_RETRIES = 3;
-        const BASE_DELAY_MS = 2000; // Start with 2 seconds
-        const TIMEOUT_MS = 90000; // 90 seconds per attempt
-
-        console.log('🔧 Starting transaction with retry support...', {
-            instructionCount: payload.instructions?.length ?? 0,
-            maxRetries: MAX_RETRIES,
-        });
+        const BASE_DELAY_MS = 2000;
+        const TIMEOUT_MS = 90000;
 
         let lastError: Error | null = null;
 
         for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-            console.log(`📤 Transaction attempt ${attempt}/${MAX_RETRIES}...`);
-
             let timerId: ReturnType<typeof setTimeout> | undefined;
 
             try {
@@ -116,8 +108,6 @@ export function usePatchedWallet() {
                 ]);
 
                 if (timerId) clearTimeout(timerId);
-
-                console.log('📥 SDK returned:', typeof result, result);
 
                 // Extract signature from various possible return formats
                 let signature: string;
@@ -144,7 +134,6 @@ export function usePatchedWallet() {
                     throw new Error(`Unexpected result type: ${typeof result}`);
                 }
 
-                console.log('✅ Transaction confirmed!', signature);
                 return signature;
 
             } catch (error) {
@@ -155,8 +144,7 @@ export function usePatchedWallet() {
 
                 // If it's a 429 error and we have retries left, wait and retry
                 if (is429Error(error) && attempt < MAX_RETRIES) {
-                    const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1); // 2s, 4s, 8s
-                    console.log(`⏳ Rate limited (429). Waiting ${delay / 1000}s before retry...`);
+                    const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
                     await sleep(delay);
                     continue;
                 }

@@ -107,9 +107,6 @@ export function normalizeSignature(signature: Uint8Array): Uint8Array {
         // Convert back to bytes
         const lowSBytes = bigIntToBytes(lowS, 32);
 
-        // Log the fix
-        console.log('LazorPay: Normalized High-S signature to Low-S form.');
-
         // Return normalized signature (r || lowS)
         const normalized = new Uint8Array(64);
         normalized.set(r, 0);
