@@ -163,6 +163,12 @@ export function SponsoredMint() {
                     not just simple transfers! The paymaster sponsors a complex multi-instruction
                     transaction that creates a new SPL token.
                 </p>
+                <div className="demo-warning">
+                    <strong>SDK Limitation:</strong> Token minting requires an additional signer
+                    (the new mint keypair). The current LazorKit SDK doesn't support passing
+                    additional signers, so this demo may fail. This is a known SDK limitation
+                    documented in <code>docs/known-issues.md</code>.
+                </div>
             </div>
 
             {/* Mint Form */}
@@ -198,43 +204,47 @@ export function SponsoredMint() {
             </div>
 
             {/* Error Display */}
-            {error && (
-                <div className="demo-error">
-                    <strong>Error:</strong> {error}
-                    <p className="error-hint">
-                        Note: This demo requires SOL in your wallet for the mint account rent.
-                        Get devnet SOL from a faucet first!
-                    </p>
-                </div>
-            )}
+            {
+                error && (
+                    <div className="demo-error">
+                        <strong>Error:</strong> {error}
+                        <p className="error-hint">
+                            Note: This demo requires SOL in your wallet for the mint account rent.
+                            Get devnet SOL from a faucet first!
+                        </p>
+                    </div>
+                )
+            }
 
             {/* Success Display */}
-            {lastSignature && mintAddress && (
-                <div className="demo-success">
-                    <div className="success-icon"><CheckCircle size={20} strokeWidth={1.5} /></div>
-                    <div className="success-content">
-                        <h5>Token Created!</h5>
-                        <div className="success-links">
-                            <a
-                                href={getExplorerUrl(lastSignature)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="explorer-link"
-                            >
-                                View Transaction ↗
-                            </a>
-                            <a
-                                href={getAccountExplorerUrl(mintAddress)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="explorer-link"
-                            >
-                                View Token Mint ↗
-                            </a>
+            {
+                lastSignature && mintAddress && (
+                    <div className="demo-success">
+                        <div className="success-icon"><CheckCircle size={20} strokeWidth={1.5} /></div>
+                        <div className="success-content">
+                            <h5>Token Created!</h5>
+                            <div className="success-links">
+                                <a
+                                    href={getExplorerUrl(lastSignature)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="explorer-link"
+                                >
+                                    View Transaction ↗
+                                </a>
+                                <a
+                                    href={getAccountExplorerUrl(mintAddress)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="explorer-link"
+                                >
+                                    View Token Mint ↗
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Transaction Flow */}
             <div className="demo-section">
@@ -264,6 +274,6 @@ export function SponsoredMint() {
                     All 4 instructions in 1 gasless transaction!
                 </p>
             </div>
-        </Card>
+        </Card >
     );
 }

@@ -9,7 +9,7 @@
  * 3. Message signing
  * 4. Token minting (program interaction)
  * 
- * @author Your Name
+ * @see https://github.com/haadi101/lazorpay
  * @see https://docs.lazorkit.com
  * @see https://github.com/lazor-kit/lazor-kit
  */

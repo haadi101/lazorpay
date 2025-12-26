@@ -87,7 +87,7 @@ export function normalizeSignature(signature: Uint8Array): Uint8Array {
     // Validate signature length
     if (signature.length !== 64) {
         console.warn(
-            `⚠️ Vibecoder Patch: Expected 64-byte signature, got ${signature.length} bytes. Returning as-is.`
+            `LazorPay: Expected 64-byte signature, got ${signature.length} bytes. Returning as-is.`
         );
         return signature;
     }
@@ -108,7 +108,7 @@ export function normalizeSignature(signature: Uint8Array): Uint8Array {
         const lowSBytes = bigIntToBytes(lowS, 32);
 
         // Log the fix
-        console.log('⚠️ Vibecoder Patch: Normalized High-S signature to Low-S form.');
+        console.log('LazorPay: Normalized High-S signature to Low-S form.');
 
         // Return normalized signature (r || lowS)
         const normalized = new Uint8Array(64);
@@ -184,7 +184,7 @@ export function mightExceedSizeLimit(
 export function warnIfTooLarge(serializedTx: Uint8Array): void {
     if (serializedTx.length > SOLANA_TX_SIZE_LIMIT) {
         console.warn(
-            `⚠️ Vibecoder Patch: Transaction size (${serializedTx.length} bytes) exceeds ` +
+            `LazorPay: Transaction size (${serializedTx.length} bytes) exceeds ` +
             `Solana limit (${SOLANA_TX_SIZE_LIMIT} bytes). Consider splitting into multiple transactions.`
         );
     }

@@ -12,16 +12,29 @@
  */
 
 import { useState } from 'react';
-import { flushSync } from 'react-dom';
 import { useWallet } from '@lazorkit/wallet';
-import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { SystemProgram, PublicKey, LAMPORTS_PER_SOL, Connection } from '@solana/web3.js';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
-import { getExplorerUrl } from '../../config/lazorkit';
+import { getExplorerUrl, ACTIVE_NETWORK } from '../../config/lazorkit';
 import { ArrowRightLeft, CheckCircle, ExternalLink } from 'lucide-react';
 import './demos.css';
+
+// =============================================================================
+// UTILITIES
+// =============================================================================
+
+/**
+ * Convert SOL string to lamports using string parsing (avoids floating point errors)
+ * Example: "0.1" -> 100000000n
+ */
+function solToLamports(sol: string): number {
+    const [whole = '0', frac = ''] = sol.split('.');
+    const fracPadded = frac.padEnd(9, '0').slice(0, 9);
+    return parseInt(whole + fracPadded, 10);
+}
 
 // =============================================================================
 // COMPONENT
@@ -42,22 +55,16 @@ export function GaslessTransfer() {
     const [amount, setAmount] = useState('0.001');
 
     /**
-     * Handle SOL transfer with flushSync for immediate UI updates
+     * Handle SOL transfer with balance validation
      */
     const handleTransfer = async () => {
-        console.log('▶️ handleTransfer started');
         if (!smartWalletPubkey || !recipient) return;
 
-        // Reset state and start loading - FORCE SYNC
-        flushSync(() => {
-            setIsLoading(true);
-            setTxError(null);
-            setTxSignature(null);
-        });
+        setIsLoading(true);
+        setTxError(null);
+        setTxSignature(null);
 
         try {
-            console.log('⚡ Starting transaction flow...');
-
             // Validate recipient address
             let destinationPubkey: PublicKey;
             try {
@@ -66,11 +73,27 @@ export function GaslessTransfer() {
                 throw new Error('Invalid recipient address');
             }
 
+            // Convert SOL to lamports using precise string parsing
+            const lamports = solToLamports(amount);
+            if (lamports <= 0) {
+                throw new Error('Amount must be greater than 0');
+            }
+
+            // Check balance before attempting transfer
+            const connection = new Connection(ACTIVE_NETWORK.rpcUrl);
+            const balance = await connection.getBalance(smartWalletPubkey);
+            if (balance < lamports) {
+                throw new Error(
+                    `Insufficient balance. You have ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL ` +
+                    `but trying to send ${(lamports / LAMPORTS_PER_SOL).toFixed(4)} SOL`
+                );
+            }
+
             // Create transfer instruction
             const instruction = SystemProgram.transfer({
                 fromPubkey: smartWalletPubkey,
                 toPubkey: destinationPubkey,
-                lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
+                lamports,
             });
 
             // Sign and send with paymaster
@@ -79,28 +102,13 @@ export function GaslessTransfer() {
                 transactionOptions: {},
             });
 
-            console.log('✅ Transaction confirmed:', sig);
-
-            // FORCE SYNC UPDATE - This MUST update the UI immediately
-            flushSync(() => {
-                setIsLoading(false);
-                setTxSignature(sig);
-            });
-
-            console.log('✅ flushSync completed - UI should be updated now');
-
-            // Also show an alert as backup confirmation
-            alert(`✅ Transaction successful!\n\nSignature: ${sig.slice(0, 20)}...`);
+            setTxSignature(sig);
 
         } catch (err) {
-            console.error('❌ Transfer failed:', err);
             const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
-
-            // FORCE SYNC ERROR UPDATE
-            flushSync(() => {
-                setIsLoading(false);
-                setTxError(errorMessage);
-            });
+            setTxError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
     };
 

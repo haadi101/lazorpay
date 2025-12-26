@@ -8,29 +8,59 @@
  */
 
 // =============================================================================
+// CONSTANTS
+// =============================================================================
+
+/** Solana signature length in base58 encoding (87-88 characters) */
+export const SOLANA_SIGNATURE_LENGTH = { min: 87, max: 88 };
+
+/** Default compute unit limit for complex transactions */
+export const DEFAULT_COMPUTE_UNIT_LIMIT = 300_000;
+
+/** Transaction retry configuration */
+export const RETRY_CONFIG = {
+    maxRetries: 3,
+    baseDelayMs: 2000,
+    timeoutMs: 90_000,
+} as const;
+
+// =============================================================================
 // NETWORK CONFIGURATION
 // =============================================================================
 
 /**
- * Solana network endpoints
+ * Network configuration with RPC and paymaster URLs tied together
+ * This prevents the bug where switching networks uses the wrong paymaster
+ */
+interface NetworkConfig {
+    name: string;
+    rpcUrl: string;
+    explorerUrl: string;
+    paymasterUrl: string;
+}
+
+/**
+ * Solana network configurations
  * - Devnet: For development and testing (free SOL from faucet)
  * - Mainnet: For production (real SOL required)
  */
-export const NETWORKS = {
+export const NETWORKS: Record<'devnet' | 'mainnet', NetworkConfig> = {
     devnet: {
         name: 'Devnet',
-        // Helius RPC - reliable endpoint with dedicated API key
-        rpcUrl: 'https://devnet.helius-rpc.com/?api-key=e920969b-4ec5-4014-a3ce-a1075f288c04',
+        // Use env variable or fallback to public endpoint (rate-limited)
+        rpcUrl: import.meta.env.VITE_RPC_URL || 'https://api.devnet.solana.com',
         explorerUrl: 'https://explorer.solana.com/?cluster=devnet',
+        paymasterUrl: 'https://kora.devnet.lazorkit.com',
     },
     mainnet: {
         name: 'Mainnet',
-        rpcUrl: 'https://api.mainnet-beta.solana.com',
+        rpcUrl: import.meta.env.VITE_MAINNET_RPC_URL || 'https://api.mainnet-beta.solana.com',
         explorerUrl: 'https://explorer.solana.com/',
+        paymasterUrl: 'https://kora.mainnet.lazorkit.com',
     },
 } as const;
 
-// Current active network
+// Current active network - change this to switch networks
 export const ACTIVE_NETWORK = NETWORKS.devnet;
 
 // =============================================================================
@@ -45,25 +75,15 @@ export const PORTAL_URL = 'https://portal.lazor.sh';
 
 /**
  * Paymaster Configuration
- * The paymaster sponsors gas fees, enabling "gasless" transactions
- * 
- * How it works:
- * 1. User signs transaction with passkey
- * 2. Transaction is sent to paymaster
- * 3. Paymaster pays the SOL gas fee
- * 4. User can optionally pay in USDC instead
+ * Now derived from the active network to prevent configuration mismatches
  */
 export const PAYMASTER_CONFIG = {
-    // Devnet paymaster (free for testing)
-    paymasterUrl: 'https://kora.devnet.lazorkit.com',
-    // Uncomment for mainnet:
-    // paymasterUrl: 'https://kora.mainnet.lazorkit.com',
-    // apiKey: 'YOUR_API_KEY', // Required for mainnet
+    paymasterUrl: ACTIVE_NETWORK.paymasterUrl,
+    // API key required for mainnet (set via env variable)
+    ...(import.meta.env.VITE_PAYMASTER_API_KEY && {
+        apiKey: import.meta.env.VITE_PAYMASTER_API_KEY,
+    }),
 };
-
-// =============================================================================
-// COMPLETE LAZORKIT CONFIG
-// =============================================================================
 
 /**
  * Combined configuration for LazorkitProvider

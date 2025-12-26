@@ -160,6 +160,29 @@
    DEMO SUCCESS / ERROR
    ============================================================================= */
 
+.demo-warning {
+    padding: 0.875rem 1rem;
+    margin-top: 1rem;
+    font-size: 0.8125rem;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 8px;
+    line-height: 1.5;
+}
+
+.demo-warning strong {
+    color: #fcd34d;
+}
+
+.demo-warning code {
+    padding: 0.125rem 0.375rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 0.75rem;
+}
+
 .demo-success {
     display: flex;
     align-items: flex-start;
