@@ -1,19 +1,12 @@
 /**
- * Enhanced Wallet Hook with Signature Normalization
+ * Enhanced Wallet Hook with Signature Normalization & Rate Limit Handling
  * 
- * This hook wraps the LazorKit useWallet hook and automatically
- * applies the High-S signature fix for Solana compatibility.
+ * This hook wraps the LazorKit useWallet hook and automatically:
+ * 1. Applies High-S signature fix for Solana compatibility
+ * 2. Handles 429 rate limit errors with exponential backoff
+ * 3. Provides robust error handling for various SDK response formats
  * 
  * Use this instead of importing useWallet directly from @lazorkit/wallet
- * 
- * @example
- * ```tsx
- * import { usePatchedWallet } from '../hooks/usePatchedWallet';
- * 
- * function MyComponent() {
- *   const { connect, signMessage, signAndSendTransaction } = usePatchedWallet();
- * }
- * ```
  */
 
 import { useWallet } from '@lazorkit/wallet';
@@ -30,36 +23,47 @@ interface SignMessageResult {
 }
 
 // =============================================================================
+// RETRY UTILITY
+// =============================================================================
+
+/**
+ * Sleep for a given number of milliseconds
+ */
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Check if error is a rate limit (429) error
+ */
+const is429Error = (error: unknown): boolean => {
+    if (error instanceof Error) {
+        const msg = error.message.toLowerCase();
+        return msg.includes('429') ||
+            msg.includes('rate limit') ||
+            msg.includes('too many requests') ||
+            msg.includes('throttl');
+    }
+    return false;
+};
+
+// =============================================================================
 // PATCHED HOOK
 // =============================================================================
 
 export function usePatchedWallet() {
-    // Get the original wallet hook
     const wallet = useWallet();
 
     /**
      * Patched signMessage that normalizes High-S signatures
-     * 
-     * Note: The SDK returns { signature: string, signedPayload: string }
-     * The signature is already base64 encoded, so we need to decode,
-     * normalize, and re-encode.
      */
     const patchedSignMessage = useCallback(async (message: string): Promise<SignMessageResult> => {
-        // Call the original signMessage
         const result = await wallet.signMessage(message);
 
         try {
-            // Decode the base64 signature
             const sigBytes = Uint8Array.from(atob(result.signature), c => c.charCodeAt(0));
 
-            // Check if it needs normalization
             if (isHighS(sigBytes)) {
-                console.log('🔧 usePatchedWallet: Detected High-S signature, normalizing...');
-
-                // Normalize the signature
+                console.log('🔧 Detected High-S signature, normalizing...');
                 const normalizedBytes = normalizeSignature(sigBytes);
-
-                // Re-encode to base64
                 const normalizedBase64 = btoa(String.fromCharCode(...normalizedBytes));
 
                 return {
@@ -68,107 +72,120 @@ export function usePatchedWallet() {
                 };
             }
         } catch (e) {
-            // If anything fails in the normalization, return original
-            console.warn('⚠️ usePatchedWallet: Could not normalize signature, using original', e);
+            console.warn('⚠️ Could not normalize signature, using original', e);
         }
 
         return result;
     }, [wallet.signMessage]);
 
     /**
-     * Enhanced signAndSendTransaction with robust response handling
-     * 
-     * The SDK may return different types depending on the flow:
-     * - String: direct signature
-     * - Object: { signature: string } or similar
-     * - Array: [signature1, signature2] for chunked transactions
+     * Enhanced signAndSendTransaction with:
+     * - Exponential backoff retry for 429 errors
+     * - Timeout protection
+     * - Robust response parsing
      */
-    const patchedSignAndSendTransaction = useCallback(async (payload: Parameters<typeof wallet.signAndSendTransaction>[0]): Promise<string> => {
-        console.log('🔧 usePatchedWallet: Starting transaction...', {
+    const patchedSignAndSendTransaction = useCallback(async (
+        payload: Parameters<typeof wallet.signAndSendTransaction>[0]
+    ): Promise<string> => {
+        const MAX_RETRIES = 3;
+        const BASE_DELAY_MS = 2000; // Start with 2 seconds
+        const TIMEOUT_MS = 90000; // 90 seconds per attempt
+
+        console.log('🔧 Starting transaction with retry support...', {
             instructionCount: payload.instructions?.length ?? 0,
-            timestamp: new Date().toISOString(),
+            maxRetries: MAX_RETRIES,
         });
 
-        let timerId: ReturnType<typeof setTimeout> | undefined;
+        let lastError: Error | null = null;
 
-        try {
-            // Add timeout to prevent infinite loading
-            const timeoutMs = 90000; // 90 seconds
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            console.log(`📤 Transaction attempt ${attempt}/${MAX_RETRIES}...`);
 
-            const timeoutPromise = new Promise<never>((_, reject) => {
-                timerId = setTimeout(() => {
-                    console.error('⏰ Transaction timeout reached');
-                    reject(new Error('Transaction timed out. Check Solana Explorer for status.'));
-                }, timeoutMs);
-            });
+            let timerId: ReturnType<typeof setTimeout> | undefined;
 
-            console.log('📤 Calling SDK signAndSendTransaction...');
+            try {
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    timerId = setTimeout(() => {
+                        reject(new Error('Transaction timed out. Check Solana Explorer for status.'));
+                    }, TIMEOUT_MS);
+                });
 
-            const result = await Promise.race([
-                wallet.signAndSendTransaction(payload),
-                timeoutPromise,
-            ]);
+                const result = await Promise.race([
+                    wallet.signAndSendTransaction(payload),
+                    timeoutPromise,
+                ]);
 
-            if (timerId) clearTimeout(timerId);
+                if (timerId) clearTimeout(timerId);
 
-            console.log('📥 SDK returned:', typeof result, result);
+                console.log('📥 SDK returned:', typeof result, result);
 
-            // Extract signature from various possible return formats
-            let signature: string;
+                // Extract signature from various possible return formats
+                let signature: string;
 
-            if (typeof result === 'string') {
-                // Direct string signature
-                signature = result;
-            } else if (result && typeof result === 'object') {
-                // Object with signature property
-                const obj = result as Record<string, unknown>;
-                if ('signature' in obj && typeof obj.signature === 'string') {
-                    signature = obj.signature;
-                } else if ('signatures' in obj && Array.isArray(obj.signatures) && obj.signatures.length > 0) {
-                    // Multiple signatures - take the last one (the actual transaction)
-                    const sigs = obj.signatures as string[];
-                    signature = sigs[sigs.length - 1];
-                } else {
-                    // Try to stringify and extract
-                    const str = JSON.stringify(result);
-                    console.warn('⚠️ Unexpected result format:', str);
-                    // Try to find a signature-like string (base58, 87-88 chars)
-                    const match = str.match(/[1-9A-HJ-NP-Za-km-z]{87,88}/);
-                    if (match) {
-                        signature = match[0];
+                if (typeof result === 'string') {
+                    signature = result;
+                } else if (result && typeof result === 'object') {
+                    const obj = result as Record<string, unknown>;
+                    if ('signature' in obj && typeof obj.signature === 'string') {
+                        signature = obj.signature;
+                    } else if ('signatures' in obj && Array.isArray(obj.signatures) && obj.signatures.length > 0) {
+                        const sigs = obj.signatures as string[];
+                        signature = sigs[sigs.length - 1];
                     } else {
-                        throw new Error('Could not extract signature from result');
+                        const str = JSON.stringify(result);
+                        const match = str.match(/[1-9A-HJ-NP-Za-km-z]{87,88}/);
+                        if (match) {
+                            signature = match[0];
+                        } else {
+                            throw new Error('Could not extract signature from result');
+                        }
                     }
+                } else {
+                    throw new Error(`Unexpected result type: ${typeof result}`);
                 }
-            } else {
-                throw new Error(`Unexpected result type: ${typeof result}`);
+
+                console.log('✅ Transaction confirmed!', signature);
+                return signature;
+
+            } catch (error) {
+                if (timerId) clearTimeout(timerId);
+                lastError = error instanceof Error ? error : new Error(String(error));
+
+                console.error(`❌ Attempt ${attempt} failed:`, lastError.message);
+
+                // If it's a 429 error and we have retries left, wait and retry
+                if (is429Error(error) && attempt < MAX_RETRIES) {
+                    const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1); // 2s, 4s, 8s
+                    console.log(`⏳ Rate limited (429). Waiting ${delay / 1000}s before retry...`);
+                    await sleep(delay);
+                    continue;
+                }
+
+                // For non-429 errors or last attempt, don't retry
+                if (!is429Error(error)) {
+                    break;
+                }
             }
-
-            console.log('✅ usePatchedWallet: Transaction confirmed!', signature);
-            return signature;
-
-        } catch (error) {
-            console.error('❌ usePatchedWallet: Transaction failed:', error);
-
-            // Check for specific error types
-            const errorMessage = error instanceof Error ? error.message : String(error);
-
-            if (errorMessage.includes('0x2') || errorMessage.includes('invalid signature')) {
-                console.error('🚨 High-S signature detected!');
-            }
-
-            if (errorMessage.includes('too large') || errorMessage.includes('1232')) {
-                console.error('🚨 Transaction too large!');
-            }
-
-            throw error;
         }
+
+        // All retries exhausted
+        const errorMessage = lastError?.message || 'Transaction failed after all retries';
+
+        if (is429Error(lastError)) {
+            throw new Error(
+                `LazorKit paymaster is rate limiting requests (429). ` +
+                `This is a temporary infrastructure issue. Please wait 30-60 seconds and try again. ` +
+                `Original error: ${errorMessage}`
+            );
+        }
+
+        throw lastError || new Error(errorMessage);
     }, [wallet]);
 
-    // Return the wallet with patched methods
     return {
         ...wallet,
         signMessage: patchedSignMessage,
         signAndSendTransaction: patchedSignAndSendTransaction,
     };
 }
+
