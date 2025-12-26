@@ -74,6 +74,16 @@ export function SponsoredMint() {
             // Get minimum rent for mint account
             const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
+            // Check if user has enough SOL for rent
+            const userBalance = await connection.getBalance(smartWalletPubkey);
+            if (userBalance < lamports) {
+                throw new Error(
+                    `Need ${(lamports / 1e9).toFixed(4)} SOL for mint account rent. ` +
+                    `You have ${(userBalance / 1e9).toFixed(4)} SOL. ` +
+                    `Get devnet SOL from a faucet first!`
+                );
+            }
+
             // Get associated token account address
             const ata = await getAssociatedTokenAddress(
                 mintKeypair.publicKey,
