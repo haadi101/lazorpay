@@ -203,13 +203,19 @@ export function SponsoredMint() {
                     />
 
                     <Button
-                        variant="primary"
+                        variant="secondary"
                         fullWidth
                         isLoading={isLoading}
                         onClick={handleMint}
+                        disabled={true}
+                        title="Disabled: LazorKit SDK doesn't support additional signers (mintKeypair)"
                     >
-                        {isLoading ? 'Minting Token...' : 'Mint New Token (Gasless)'}
+                        Mint New Token (SDK Limitation)
                     </Button>
+                    <p className="demo-hint" style={{ color: '#fbbf24', marginTop: '0.5rem' }}>
+                        This demo is disabled because token minting requires the mint keypair
+                        to sign the transaction, which the current SDK doesn't support.
+                    </p>
                 </div>
             </div>
 
