@@ -8,6 +8,7 @@ import {
 import { Zap, Shield, CheckCircle, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { Toast } from '../ui/Toast';
 
 import { useWallet } from '@lazorkit/wallet';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
@@ -19,11 +20,8 @@ import './demos.css';
 export function SubscriptionDemo() {
     const { smartWalletPubkey } = useWallet();
     const { signAndSendTransaction } = usePatchedWallet();
-
-    // State
     const [isSubscribed, setIsSubscribed] = useState(false);
-
-    // Transaction hook
+    const [showSuccessToast, setShowSuccessToast] = useState(false);
     const { execute, isLoading, error, lastSignature } = useTransaction();
 
     const handleSubscribe = async () => {
@@ -36,8 +34,6 @@ export function SubscriptionDemo() {
             await execute(async () => {
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
                 const tokens = getActiveTokens();
-
-                // 1. Check if user has USDC Account
                 const usdcMint = new PublicKey(tokens.USDC.mint);
 
                 let ata: PublicKey;
@@ -49,8 +45,8 @@ export function SubscriptionDemo() {
                     throw new Error('Failed to find your USDC account address. Please try disconnection and reconnecting.');
                 }
 
-                // Decode token account to check balance
                 const accountInfo = await connection.getParsedAccountInfo(ata);
+
 
                 if (!accountInfo.value) {
                     throw new Error(
@@ -58,7 +54,7 @@ export function SubscriptionDemo() {
                     );
                 }
 
-                // Check for insufficient balance (Critical Fix #6)
+
                 const parsedInfo = accountInfo.value.data as ParsedAccountData;
                 const balance = parsedInfo.parsed?.info?.tokenAmount?.uiAmount || 0;
 
@@ -68,10 +64,9 @@ export function SubscriptionDemo() {
                     );
                 }
 
-                // 2. Create Approve Instruction
+
                 // Grants SERVICE_WALLET permission to spend subscription amount
                 const amount = SUBSCRIPTION_PRICE_USDC * Math.pow(10, tokens.USDC.decimals);
-                // Use a valid pubkey instead of system program (Critical Fix #7)
                 const serviceWallet = new PublicKey(SERVICE_WALLET_PUBKEY);
 
                 const approveIx = createApproveInstruction(
@@ -81,20 +76,22 @@ export function SubscriptionDemo() {
                     BigInt(amount)
                 );
 
-                // 3. Execute Gasless Transaction
+
                 const signature = await signAndSendTransaction({
                     instructions: [approveIx],
-                    transactionOptions: { computeUnitLimit: 100_000 }
+                    transactionOptions: {
+                        computeUnitLimit: 100_000
+                    }
                 });
 
-                // 4. Verify Transaction (Roast Fix #3)
-                // Don't just trust the signature, verify it on-chain
+                // Verify transaction on-chain
                 const confirmation = await connection.confirmTransaction(signature, 'confirmed');
                 if (confirmation.value.err) {
                     throw new Error(`Transaction failed: ${confirmation.value.err.toString()}`);
                 }
 
                 setIsSubscribed(true);
+                setShowSuccessToast(true);
                 return signature;
 
             }, 'sign', 'Subscribed to Lazor+ Pro');
@@ -125,7 +122,7 @@ export function SubscriptionDemo() {
 
             <div className="demo-content">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
-                    {/* Visual Tier Card */}
+
                     <div
                         className="bg-zinc-900/50 border border-white/5 relative overflow-hidden group"
                         style={{
@@ -232,7 +229,7 @@ export function SubscriptionDemo() {
                                 </Button>
                             )}
 
-                            {/* Error display - immediately visible under button */}
+
                             {error && (
                                 <div
                                     className="demo-error"
@@ -268,16 +265,17 @@ export function SubscriptionDemo() {
                         </div>
                     </div>
 
-                    {/* Technical Explanation */}
+
                     <div className="demo-section border-t border-white/5 pt-4">
                         <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">
                             <Shield size={12} />
                             How it works
                         </h4>
                         <p className="text-sm text-zinc-400 leading-relaxed">
-                            Instead of signing a transaction every month, you approve a
-                            <strong> Token Allowance</strong> for the service provider.
-                            LazorPay executes this approval <strong>gaslessly</strong> so you don't need SOL.
+                            Instead of paying immediately, you are approving a
+                            <strong> Token Allowance</strong>. This authorizes the service to "pull"
+                            payments automatically each month. Your balance implies the capacity to pay,
+                            but the actual deduction happens when the service claims it.
                         </p>
 
                         {error && (
@@ -305,6 +303,14 @@ export function SubscriptionDemo() {
                     </div>
                 </div>
             </div>
+
+            {showSuccessToast && (
+                <Toast
+                    type="success"
+                    message="Subscription authorized successfully!"
+                    onClose={() => setShowSuccessToast(false)}
+                />
+            )}
         </Card>
     );
 }
