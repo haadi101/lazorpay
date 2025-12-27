@@ -43,23 +43,29 @@ export function SubscriptionDemo() {
         console.log('✅ Wallet connected:', smartWalletPubkey.toBase58());
 
         try {
+            console.log('📤 Starting execute...');
             await execute(async () => {
+                console.log('🔄 Inside execute callback');
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
 
                 // 1. Check if user has USDC Account
+                console.log('🔍 Checking for USDC account...');
                 const usdcMint = new PublicKey(TOKENS.USDC.mint);
                 const ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
+                console.log('📍 USDC ATA:', ata.toBase58());
 
                 const accountInfo = await connection.getAccountInfo(ata);
+                console.log('📄 Account info:', accountInfo ? 'EXISTS' : 'NULL');
 
                 if (!accountInfo) {
+                    console.log('❌ No USDC account found!');
                     throw new Error(
                         "You don't have a USDC account yet! Try the 'Gasless Transfer' demo first to receive some USDC."
                     );
                 }
 
                 // 2. Create Approve Instruction
-                // Grants SERVICE_WALLET permission to spend 50 USDC
+                console.log('✍️ Creating approve instruction...');
                 const amount = 50 * Math.pow(10, TOKENS.USDC.decimals);
 
                 const approveIx = createApproveInstruction(
@@ -70,19 +76,22 @@ export function SubscriptionDemo() {
                 );
 
                 // 3. Execute Gasless Transaction
+                console.log('🚀 Sending transaction...');
                 const signature = await signAndSendTransaction({
                     instructions: [approveIx],
                     transactionOptions: { computeUnitLimit: 100_000 }
                 });
 
+                console.log('✅ Transaction sent:', signature);
                 setIsSubscribed(true);
                 return signature;
 
             }, 'sign', 'Subscribed to Lazor+ Pro');
+            console.log('✅ Execute completed');
         } catch (err) {
             // Fallback alert in case error state doesn't render
             const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('Subscription error:', msg);
+            console.error('❌ Subscription error:', msg);
         }
     };
 
