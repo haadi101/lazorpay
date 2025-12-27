@@ -18,8 +18,8 @@ import { useTransaction } from '../../hooks/useTransaction';
 import { ACTIVE_NETWORK, TOKENS, getExplorerUrl } from '../../config/lazorkit';
 import './demos.css'; // Re-use shared styles
 
-// Mock "Service" Wallet that receives the allowance
-const SERVICE_WALLET = new PublicKey('LazorSvc11111111111111111111111111111111111');
+// Mock "Service" Wallet that receives the allowance (using a valid devnet address)
+const SERVICE_WALLET = new PublicKey('11111111111111111111111111111111');
 
 export function SubscriptionDemo() {
     const { smartWalletPubkey } = useWallet();
@@ -37,42 +37,48 @@ export function SubscriptionDemo() {
             return;
         }
 
-        await execute(async () => {
-            const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
+        try {
+            await execute(async () => {
+                const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
 
-            // 1. Check if user has USDC Account
-            const usdcMint = new PublicKey(TOKENS.USDC.mint);
-            const ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
+                // 1. Check if user has USDC Account
+                const usdcMint = new PublicKey(TOKENS.USDC.mint);
+                const ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
 
-            const accountInfo = await connection.getAccountInfo(ata);
+                const accountInfo = await connection.getAccountInfo(ata);
 
-            if (!accountInfo) {
-                throw new Error(
-                    "You don't have a USDC account yet! Try the 'Gasless Transfer' demo first to receive some USDC."
+                if (!accountInfo) {
+                    throw new Error(
+                        "You don't have a USDC account yet! Try the 'Gasless Transfer' demo first to receive some USDC."
+                    );
+                }
+
+                // 2. Create Approve Instruction
+                // Grants SERVICE_WALLET permission to spend 50 USDC
+                const amount = 50 * Math.pow(10, TOKENS.USDC.decimals);
+
+                const approveIx = createApproveInstruction(
+                    ata,              // User's USDC Account
+                    SERVICE_WALLET,   // Delegate (The Service)
+                    smartWalletPubkey,// Owner (The User)
+                    BigInt(amount)
                 );
-            }
 
-            // 2. Create Approve Instruction
-            // Grants SERVICE_WALLET permission to spend 50 USDC
-            const amount = 50 * Math.pow(10, TOKENS.USDC.decimals);
+                // 3. Execute Gasless Transaction
+                const signature = await signAndSendTransaction({
+                    instructions: [approveIx],
+                    transactionOptions: { computeUnitLimit: 100_000 }
+                });
 
-            const approveIx = createApproveInstruction(
-                ata,              // User's USDC Account
-                SERVICE_WALLET,   // Delegate (The Service)
-                smartWalletPubkey,// Owner (The User)
-                BigInt(amount)
-            );
+                setIsSubscribed(true);
+                return signature;
 
-            // 3. Execute Gasless Transaction
-            const signature = await signAndSendTransaction({
-                instructions: [approveIx],
-                transactionOptions: { computeUnitLimit: 100_000 }
-            });
-
-            setIsSubscribed(true);
-            return signature;
-
-        }, 'sign', 'Subscribed to Lazor+ Pro');
+            }, 'sign', 'Subscribed to Lazor+ Pro');
+        } catch (err) {
+            // Fallback alert in case error state doesn't render
+            const msg = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Subscription error:', msg);
+        }
     };
 
     return (
@@ -143,6 +149,14 @@ export function SubscriptionDemo() {
                                 >
                                     Subscribe Now (Gasless)
                                 </Button>
+                            )}
+
+                            {/* Error display - immediately visible under button */}
+                            {error && (
+                                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
+                                    <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-red-400">{error}</p>
+                                </div>
                             )}
                         </div>
                     </div>
