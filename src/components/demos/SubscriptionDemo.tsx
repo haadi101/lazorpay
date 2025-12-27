@@ -136,41 +136,41 @@ export function SubscriptionDemo() {
             <div className="demo-content">
                 <div className="flex flex-col gap-8 w-full">
                     {/* Visual Tier Card */}
-                    <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5 relative overflow-hidden group text-center">
+                    <div className="p-8 rounded-xl bg-zinc-900/50 border border-white/5 relative overflow-hidden group text-center min-h-[600px] flex flex-col justify-center">
                         <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
                             <Zap size={120} />
                         </div>
 
-                        <div className="flex flex-col items-center mb-6 relative z-10 gap-2">
+                        <div className="flex flex-col items-center mb-8 relative z-10 gap-3">
                             <div>
-                                <h4 className="text-2xl font-bold text-white mb-1">Lazor+ Pro</h4>
-                                <p className="text-sm text-zinc-400">Monthly Plan</p>
+                                <h4 className="text-2xl font-bold text-white mb-2">Lazor+ Pro</h4>
+                                <p className="text-base text-zinc-400">Monthly Plan</p>
                             </div>
-                            <div className="mt-2 text-center">
-                                <span className="text-4xl font-bold text-white">$50</span>
-                                <span className="text-sm text-zinc-500 ml-1">/month</span>
+                            <div className="mt-3 text-center">
+                                <span className="text-5xl font-bold text-white">$50</span>
+                                <span className="text-base text-zinc-500 ml-1">/month</span>
                             </div>
                         </div>
 
-                        <ul className="space-y-3 mb-8 relative z-10 text-left inline-block mx-auto">
-                            <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
+                        <ul className="space-y-4 mb-10 relative z-10 flex flex-col items-center">
+                            <li className="flex items-center text-base text-zinc-300">
+                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
                                 Gasless Transactions
                             </li>
-                            <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
+                            <li className="flex items-center text-base text-zinc-300">
+                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
                                 Priority Support
                             </li>
-                            <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
+                            <li className="flex items-center text-base text-zinc-300">
+                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
                                 Early Access Features
                             </li>
                         </ul>
 
                         <div className="relative z-10">
                             {isSubscribed ? (
-                                <div className="w-full py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-center font-medium flex items-center justify-center gap-2">
-                                    <CheckCircle size={18} />
+                                <div className="w-full py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-center font-medium flex items-center justify-center gap-2 text-base">
+                                    <CheckCircle size={20} />
                                     Active Subscription
                                 </div>
                             ) : (
@@ -179,7 +179,7 @@ export function SubscriptionDemo() {
                                     fullWidth
                                     onClick={handleSubscribe}
                                     isLoading={isLoading}
-                                    size="lg" // Larger button for mobile
+                                    size="lg"
                                 >
                                     Subscribe Now (Gasless)
                                 </Button>
