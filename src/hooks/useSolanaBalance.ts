@@ -8,9 +8,14 @@
  * - Clean state management
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { ACTIVE_NETWORK } from '../config/lazorkit';
+import {
+    BALANCE_MAX_RETRIES,
+    BALANCE_REFRESH_INTERVAL,
+    BASE_DELAY_MS
+} from '../config/constants';
 
 interface BalanceState {
     sol: number;
@@ -20,25 +25,24 @@ interface BalanceState {
 }
 
 interface UseSolanaBalanceOptions {
-    /** Refresh interval in ms (default: 60000 = 1 minute) */
+    /** Refresh interval in ms */
     refreshInterval?: number;
-    /** Max retry attempts (default: 3) */
+    /** Max retry attempts */
     maxRetries?: number;
-    /** Enable auto-refresh (default: true) */
+    /** Enable auto-refresh */
     autoRefresh?: boolean;
 }
-
-const DEFAULT_OPTIONS: Required<UseSolanaBalanceOptions> = {
-    refreshInterval: 60000,
-    maxRetries: 3,
-    autoRefresh: true,
-};
 
 export function useSolanaBalance(
     publicKey: PublicKey | null,
     options: UseSolanaBalanceOptions = {}
 ) {
-    const config = { ...DEFAULT_OPTIONS, ...options };
+    // Memoize options to prevent effect loops
+    const config = useMemo(() => ({
+        refreshInterval: options.refreshInterval ?? BALANCE_REFRESH_INTERVAL,
+        maxRetries: options.maxRetries ?? BALANCE_MAX_RETRIES,
+        autoRefresh: options.autoRefresh ?? true,
+    }), [options.refreshInterval, options.maxRetries, options.autoRefresh]);
 
     const [state, setState] = useState<BalanceState>({
         sol: 0,
@@ -47,102 +51,112 @@ export function useSolanaBalance(
         lastUpdated: null,
     });
 
+    // Use refs to track mounted state and preventing race conditions
+    const isMounted = useRef(true);
+    const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+            if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+            if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+        };
+    }, []);
+
     const fetchBalance = useCallback(async (showLoading = true) => {
         if (!publicKey) {
-            setState({ sol: 0, isLoading: false, error: null, lastUpdated: null });
+            if (isMounted.current) {
+                setState({ sol: 0, isLoading: false, error: null, lastUpdated: null });
+            }
             return;
         }
 
-        if (showLoading) {
+        if (showLoading && isMounted.current) {
             setState(prev => ({ ...prev, isLoading: true, error: null }));
         }
 
         let lastError: Error | null = null;
+        let success = false;
 
         for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
-            try {
-                const connection = new Connection(ACTIVE_NETWORK.rpcUrl, {
-                    commitment: 'confirmed',
-                });
+            if (!isMounted.current) return;
 
+            try {
+                const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
                 const lamports = await connection.getBalance(publicKey);
                 const sol = lamports / LAMPORTS_PER_SOL;
 
-                setState({
-                    sol,
-                    isLoading: false,
-                    error: null,
-                    lastUpdated: Date.now(),
-                });
-
-                return; // Success - exit the retry loop
-
+                if (isMounted.current) {
+                    setState({
+                        sol,
+                        isLoading: false,
+                        error: null,
+                        lastUpdated: Date.now(),
+                    });
+                    success = true;
+                }
+                break; // Success
             } catch (err) {
                 lastError = err instanceof Error ? err : new Error('Unknown error');
 
-                // Check if it's a rate limit error
-                const isRateLimited = lastError.message.includes('429') ||
-                    lastError.message.includes('rate');
+                // Check if it's a rate limit error (429)
+                const isRateLimited = lastError.message.includes('429');
 
-                if (attempt < config.maxRetries) {
-                    // Exponential backoff: 2s, 4s, 8s
-                    const delay = Math.min(2000 * Math.pow(2, attempt), 10000);
-                    console.warn(`Balance fetch attempt ${attempt + 1} failed${isRateLimited ? ' (rate limited)' : ''}, retrying in ${delay / 1000}s`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                if (attempt < config.maxRetries && isMounted.current) {
+                    const delay = Math.min(BASE_DELAY_MS * Math.pow(2, attempt), 10000);
+
+                    if (isRateLimited) {
+                        console.warn(`Balance fetch rate limited (429), retrying in ${delay}ms...`);
+                    }
+
+                    await new Promise(resolve => {
+                        retryTimeoutRef.current = setTimeout(resolve, delay);
+                    });
                 }
             }
         }
 
-        // All retries exhausted
-        console.error('Balance fetch failed after all retries');
-        setState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: lastError?.message || 'Failed to fetch balance',
-        }));
-    }, [publicKey, config.maxRetries]);
+        if (!success && isMounted.current) {
+            setState(prev => ({
+                ...prev,
+                isLoading: false,
+                error: lastError?.message || 'Failed to fetch balance',
+            }));
+        }
+    }, [publicKey?.toBase58(), config.maxRetries.toString()]); // Stable dependencies
 
     // Initial fetch + auto-refresh
     useEffect(() => {
-        if (!publicKey) {
-            setState({ sol: 0, isLoading: false, error: null, lastUpdated: null });
-            return;
+        if (!publicKey) return;
+
+        fetchBalance(true);
+
+        if (config.autoRefresh) {
+            const startRefreshLoop = () => {
+                refreshTimerRef.current = setTimeout(() => {
+                    if (isMounted.current) {
+                        fetchBalance(false).then(() => {
+                            if (isMounted.current && config.autoRefresh) {
+                                startRefreshLoop();
+                            }
+                        });
+                    }
+                }, config.refreshInterval);
+            };
+            startRefreshLoop();
         }
 
-        let isMounted = true;
-        let refreshTimer: ReturnType<typeof setTimeout>;
-
-        const startFetch = async () => {
-            await fetchBalance(true);
-
-            if (isMounted && config.autoRefresh) {
-                const scheduleRefresh = () => {
-                    refreshTimer = setTimeout(async () => {
-                        if (isMounted) {
-                            await fetchBalance(false);
-                            scheduleRefresh();
-                        }
-                    }, config.refreshInterval);
-                };
-                scheduleRefresh();
-            }
-        };
-
-        startFetch();
-
         return () => {
-            isMounted = false;
-            if (refreshTimer) clearTimeout(refreshTimer);
+            if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+            if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
         };
-    }, [publicKey, fetchBalance, config.autoRefresh, config.refreshInterval]);
-
-    // Manual refresh function
-    const refresh = useCallback(() => {
-        fetchBalance(true);
-    }, [fetchBalance]);
+    }, [publicKey?.toBase58(), config.autoRefresh, config.refreshInterval, fetchBalance]);
 
     return {
         ...state,
-        refresh,
+        refresh: () => fetchBalance(true),
     };
 }
