@@ -177,9 +177,21 @@ export function SubscriptionDemo() {
 
                             {/* Error display - immediately visible under button */}
                             {error && (
-                                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
-                                    <AlertCircle size={16} className="text-red-400 shrink-0 mt-0.5" />
-                                    <p className="text-xs text-red-400">{error}</p>
+                                <div
+                                    className="demo-error"
+                                    style={{
+                                        marginTop: '0.75rem',
+                                        padding: '0.75rem',
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'flex-start',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    <AlertCircle size={16} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
+                                    <p style={{ fontSize: '0.875rem', color: '#ef4444', margin: 0 }}>{error}</p>
                                 </div>
                             )}
                         </div>
