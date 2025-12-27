@@ -20,6 +20,8 @@ import { useWallet } from '@lazorkit/wallet';
 import { Button } from '../ui/Button';
 import { Fingerprint } from 'lucide-react';
 import { truncateAddress } from '../../config/lazorkit';
+import { Toast, type ToastProps } from '../ui/Toast';
+import { useState } from 'react';
 import './ConnectButton.css';
 
 // =============================================================================
@@ -35,6 +37,8 @@ export function ConnectButton() {
         isConnecting,
         wallet
     } = useWallet();
+
+    const [toast, setToast] = useState<ToastProps | null>(null);
 
     /**
      * Handle wallet connection
@@ -56,13 +60,13 @@ export function ConnectButton() {
             const errorMessage = error instanceof Error ? error.message : String(error);
 
             if (errorMessage.includes('cancelled') || errorMessage.includes('canceled')) {
-                alert('Connection cancelled. Please try again and complete the passkey prompt.');
+                setToast({ message: 'Connection cancelled', type: 'info' });
             } else if (errorMessage.includes('timeout')) {
-                alert('Connection timed out. Please try again.');
+                setToast({ message: 'Connection timed out. Please try again.', type: 'error' });
             } else if (errorMessage.includes('not allowed')) {
-                alert('Passkey creation was blocked. Make sure to complete the Windows Hello prompt.');
+                setToast({ message: 'Passkey creation was blocked.', type: 'error' });
             } else {
-                alert(`Connection failed: ${errorMessage}`);
+                setToast({ message: `Connection failed: ${errorMessage}`, type: 'error' });
             }
         }
     };
@@ -113,14 +117,24 @@ export function ConnectButton() {
     // =============================================================================
 
     return (
-        <Button
-            variant="primary"
-            size="md"
-            onClick={handleConnect}
-            isLoading={isConnecting}
-            leftIcon={!isConnecting && <Fingerprint size={18} strokeWidth={1.5} />}
-        >
-            {isConnecting ? 'Authenticating...' : 'Connect with Passkey'}
-        </Button>
+        <>
+            <Button
+                variant="primary"
+                size="md"
+                onClick={handleConnect}
+                isLoading={isConnecting}
+                leftIcon={!isConnecting && <Fingerprint size={18} strokeWidth={1.5} />}
+            >
+                {isConnecting ? 'Authenticating...' : 'Connect with Passkey'}
+            </Button>
+            {toast && (
+                <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 1000 }}>
+                    <Toast
+                        {...toast}
+                        onClose={() => setToast(null)}
+                    />
+                </div>
+            )}
+        </>
     );
 }

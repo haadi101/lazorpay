@@ -133,7 +133,7 @@ import { isHighS } from '../utils/lazor-patch';
 
 const sig = getSignature();
 if (isHighS(sig)) {
-  console.log('⚠️ This signature has High-S and needs normalization');
+  console.log('This signature has High-S and needs normalization');
 }
 ```
 
@@ -149,7 +149,7 @@ const serialized = tx.serialize({ requireAllSignatures: false });
 console.log(`Transaction size: ${serialized.length} bytes`);
 
 if (serialized.length > 1232) {
-  console.error('❌ Transaction too large!'); 
+  console.error('Transaction too large!'); 
 }
 ```
 

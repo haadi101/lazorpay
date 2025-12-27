@@ -14,7 +14,7 @@
 /** Solana signature length in base58 encoding (87-88 characters) */
 export const SOLANA_SIGNATURE_LENGTH = { min: 87, max: 88 };
 
-import { MAX_RETRIES, BASE_DELAY_MS, TIMEOUT_MS, COMPUTE_UNIT_LIMIT } from './constants';
+import { COMPUTE_UNIT_LIMIT } from './constants';
 
 /**
  * Default Compute Unit Limit for Paymaster Transactions
@@ -83,7 +83,17 @@ export const PORTAL_URL = 'https://portal.lazor.sh';
  */
 export const PAYMASTER_CONFIG = {
     paymasterUrl: ACTIVE_NETWORK.paymasterUrl,
-    // API key required for mainnet (set via env variable)
+    /**
+     * SECURITY WARNING
+     * 
+     * You are exposing your Paymaster API Key in the client-side code.
+     * This is acceptable for demos/hackathons, but DANGEROUS for production.
+     * 
+     * In production, malicious users can scrape this key and drain your paymaster balance.
+     * 
+     * RECOMMENDED FIX:
+     * Proxy paymaster requests through your own backend API to hide this key.
+     */
     ...(import.meta.env.VITE_PAYMASTER_API_KEY && {
         apiKey: import.meta.env.VITE_PAYMASTER_API_KEY,
     }),

@@ -91,7 +91,8 @@ export function GaslessTransfer() {
             const connection = new Connection(ACTIVE_NETWORK.rpcUrl);
             const balance = await connection.getBalance(smartWalletPubkey);
 
-            // balance is number (lamports), lamports is bigint. Compare safely.
+
+
             if (BigInt(balance) < lamports) {
                 throw new Error(
                     `Insufficient balance. You have ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL ` +

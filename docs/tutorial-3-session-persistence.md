@@ -10,9 +10,9 @@
 
 One of LazorKit's best features is **seamless session persistence**. When users authenticate once, they stay logged in:
 
-- ✅ Page refreshes don't log them out
-- ✅ Closing and reopening the browser works
-- ✅ Same passkey works across synced devices (iCloud Keychain, Google Password Manager)
+- Page refreshes don't log them out
+- Closing and reopening the browser works
+- Same passkey works across synced devices (iCloud Keychain, Google Password Manager)
 
 ---
 
@@ -50,9 +50,9 @@ When a user connects, LazorKit stores session data in **localStorage**:
 
 ### What's NOT Stored
 
-❌ Private keys (never leave Secure Enclave)  
-❌ Raw passkey data  
-❌ Sensitive credentials  
+- Private keys (never leave Secure Enclave)  
+- Raw passkey data  
+- Sensitive credentials  
 
 Only **public identifiers** are stored locally. The actual cryptographic operations always happen in the device's secure hardware.
 
@@ -155,7 +155,7 @@ function SessionStatus() {
 
   return (
     <div>
-      <p>Session Active: {isConnected ? '✅ Yes' : '❌ No'}</p>
+      <p>Session Active: {isConnected ? 'Yes' : 'No'}</p>
       {wallet && (
         <>
           <p>Wallet: {wallet.smartWallet.slice(0, 8)}...</p>
@@ -261,10 +261,10 @@ const handleSensitiveAction = async () => {
 ### 2. Don't Store Sensitive Data with Session
 
 ```tsx
-// ❌ BAD - Don't store sensitive info based on session
+// BAD - Don't store sensitive info based on session
 localStorage.setItem('user-secret', sensitiveData);
 
-// ✅ GOOD - Use session only for auth state
+// GOOD - Use session only for auth state
 const { isConnected, wallet } = useWallet();
 if (isConnected) {
   // Fetch sensitive data from secure backend
@@ -336,7 +336,7 @@ function WalletManager() {
   // Disconnected state
   return (
     <button onClick={() => connect({ feeMode: 'paymaster' })} className="btn-connect">
-      🔐 Connect with Passkey
+      Connect with Passkey
     </button>
   );
 }
@@ -392,10 +392,10 @@ export default function App() {
 
 ## Summary
 
-✅ Understood how LazorKit stores session data  
-✅ Implemented auto-reconnect on page load  
-✅ Learned about cross-device passkey sync  
-✅ Applied security best practices  
+- Understood how LazorKit stores session data  
+- Implemented auto-reconnect on page load  
+- Learned about cross-device passkey sync  
+- Applied security best practices  
 
 **Your users now enjoy a seamless, persistent authentication experience across sessions and devices!**
 
@@ -405,9 +405,9 @@ export default function App() {
 
 You've completed all three tutorials! You now know how to:
 
-1. ✅ [Create passkey-based wallets](./tutorial-1-passkey-wallet.md)
-2. ✅ [Execute gasless transactions](./tutorial-2-gasless-transactions.md)
-3. ✅ [Handle session persistence](./tutorial-3-session-persistence.md)
+1. [Create passkey-based wallets](./tutorial-1-passkey-wallet.md)
+2. [Execute gasless transactions](./tutorial-2-gasless-transactions.md)
+3. [Handle session persistence](./tutorial-3-session-persistence.md)
 
 ---
 

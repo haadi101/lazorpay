@@ -14,27 +14,19 @@ import { useCallback } from 'react';
 import { MAX_RETRIES, BASE_DELAY_MS, TIMEOUT_MS } from '../config/constants';
 import { normalizeSignature, isHighS } from '../utils/lazor-patch';
 
-// =============================================================================
-// TYPES
-// =============================================================================
+
 
 interface SignMessageResult {
     signature: string;
     signedPayload: string;
 }
 
-// =============================================================================
-// RETRY UTILITY
-// =============================================================================
 
-/**
- * Sleep for a given number of milliseconds
- */
+
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Check if error is a rate limit (429) error
- */
+
 const is429Error = (error: unknown): boolean => {
     if (error instanceof Error) {
         const msg = error.message.toLowerCase();
@@ -46,9 +38,7 @@ const is429Error = (error: unknown): boolean => {
     return false;
 };
 
-// =============================================================================
-// PATCHED HOOK
-// =============================================================================
+
 
 export function usePatchedWallet() {
     const wallet = useWallet();
@@ -107,7 +97,7 @@ export function usePatchedWallet() {
 
                 if (timerId) clearTimeout(timerId);
 
-                // Robust return value parsing
+
                 const val = result as unknown;
 
                 if (typeof val === 'string') {
@@ -127,23 +117,23 @@ export function usePatchedWallet() {
                 if (timerId) clearTimeout(timerId);
                 lastError = error instanceof Error ? error : new Error(String(error));
 
-                console.error(`❌ Attempt ${attempt} failed:`, lastError.message);
+                console.error(`Attempt ${attempt} failed:`, lastError.message);
 
-                // If it's a 429 error and we have retries left, wait and retry
+
                 if (is429Error(error) && attempt < MAX_RETRIES) {
                     const delay = BASE_DELAY_MS * Math.pow(2, attempt - 1);
                     await sleep(delay);
                     continue;
                 }
 
-                // For non-429 errors or last attempt, don't retry
+
                 if (!is429Error(error)) {
                     break;
                 }
             }
         }
 
-        // All retries exhausted
+
         const errorMessage = lastError?.message || 'Transaction failed after all retries';
 
         if (is429Error(lastError)) {
