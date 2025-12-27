@@ -134,43 +134,100 @@ export function SubscriptionDemo() {
             </div>
 
             <div className="demo-content">
-                <div className="flex flex-col gap-8 w-full">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%' }}>
                     {/* Visual Tier Card */}
-                    <div className="p-8 rounded-xl bg-zinc-900/50 border border-white/5 relative overflow-hidden group text-center min-h-[600px] flex flex-col justify-center">
-                        <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                    <div
+                        className="bg-zinc-900/50 border border-white/5 relative overflow-hidden group"
+                        style={{
+                            padding: '2.5rem',
+                            borderRadius: '16px',
+                            background: 'rgba(24, 24, 27, 0.5)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            textAlign: 'center',
+                            minHeight: '600px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            padding: '0.5rem',
+                            opacity: 0.1,
+                            pointerEvents: 'none'
+                        }}>
                             <Zap size={120} />
                         </div>
 
-                        <div className="flex flex-col items-center mb-8 relative z-10 gap-3">
-                            <div>
-                                <h4 className="text-2xl font-bold text-white mb-2">Lazor+ Pro</h4>
-                                <p className="text-base text-zinc-400">Monthly Plan</p>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            marginBottom: '2.5rem',
+                            position: 'relative',
+                            zIndex: 10,
+                            gap: '1rem'
+                        }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <h4 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: 'white', marginBottom: '0.5rem' }}>
+                                    Lazor+ Pro
+                                </h4>
+                                <p style={{ fontSize: '1.125rem', color: '#a1a1aa' }}>Monthly Plan</p>
                             </div>
-                            <div className="mt-3 text-center">
-                                <span className="text-5xl font-bold text-white">$50</span>
-                                <span className="text-base text-zinc-500 ml-1">/month</span>
+                            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 'bold', color: 'white' }}>$50</span>
+                                <span style={{ fontSize: '1.125rem', color: '#71717a', marginLeft: '0.25rem' }}>/month</span>
                             </div>
                         </div>
 
-                        <ul className="space-y-4 mb-10 relative z-10 flex flex-col items-center">
-                            <li className="flex items-center text-base text-zinc-300">
-                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
+                        <ul style={{
+                            listStyle: 'none',
+                            padding: 0,
+                            margin: '0 0 3rem 0',
+                            position: 'relative',
+                            zIndex: 10,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '1.25rem'
+                        }}>
+                            <li style={{ display: 'flex', alignItems: 'center', fontSize: '1.125rem', color: '#d4d4d8' }}>
+                                <CheckCircle size={20} style={{ color: '#10b981', marginRight: '1rem', flexShrink: 0 }} />
                                 Gasless Transactions
                             </li>
-                            <li className="flex items-center text-base text-zinc-300">
-                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
+                            <li style={{ display: 'flex', alignItems: 'center', fontSize: '1.125rem', color: '#d4d4d8' }}>
+                                <CheckCircle size={20} style={{ color: '#10b981', marginRight: '1rem', flexShrink: 0 }} />
                                 Priority Support
                             </li>
-                            <li className="flex items-center text-base text-zinc-300">
-                                <CheckCircle size={18} className="text-emerald-400 mr-3 shrink-0" />
+                            <li style={{ display: 'flex', alignItems: 'center', fontSize: '1.125rem', color: '#d4d4d8' }}>
+                                <CheckCircle size={20} style={{ color: '#10b981', marginRight: '1rem', flexShrink: 0 }} />
                                 Early Access Features
                             </li>
                         </ul>
 
-                        <div className="relative z-10">
+                        <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: '400px' }}>
                             {isSubscribed ? (
-                                <div className="w-full py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-center font-medium flex items-center justify-center gap-2 text-base">
-                                    <CheckCircle size={20} />
+                                <div style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    background: 'rgba(16, 185, 129, 0.2)',
+                                    border: '1px solid rgba(16, 185, 129, 0.5)',
+                                    borderRadius: '8px',
+                                    color: '#10b981',
+                                    textAlign: 'center',
+                                    fontWeight: 500,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '1.125rem'
+                                }}>
+                                    <CheckCircle size={22} />
                                     Active Subscription
                                 </div>
                             ) : (
