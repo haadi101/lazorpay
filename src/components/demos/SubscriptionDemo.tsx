@@ -26,16 +26,6 @@ export function SubscriptionDemo() {
     // Transaction hook
     const { execute, isLoading, error, lastSignature } = useTransaction();
 
-    // Log error state changes
-    // useEffect(() => {
-    //     console.log('🔴 Error state changed:', error);
-    // }, [error]);
-
-    // Log loading state changes
-    // useEffect(() => {
-    //     console.log('⏳ Loading state:', isLoading);
-    // }, [isLoading]);
-
     const handleSubscribe = async () => {
         if (!smartWalletPubkey) {
             alert("Please connect your wallet first!");
