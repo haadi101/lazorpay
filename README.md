@@ -50,6 +50,9 @@ LazorPay is a gasless subscription starter kit built on the **LazorKit** Smart W
 - **[Tutorial 2: Gasless Transactions](docs/tutorial-2-gasless-transactions.md)**  
   Implement gasless transfers using the Paymaster and handle transaction lifecycles safely.
 
+- **[Tutorial 3: Session Persistence](docs/tutorial-3-session-persistence.md)**  
+  Understand how to maintain secure, persistent sessions across page reloads and devices.
+
 ## Tech Stack
 
 - **Frontend**: React, Lucide React
