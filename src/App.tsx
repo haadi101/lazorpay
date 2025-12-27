@@ -112,7 +112,7 @@ function App() {
           {/* Hero Section */}
           <section className="hero">
             <h1 className="hero-title">
-              Build <span className="gradient-text">Passkey-Native</span> Solana Apps
+              Build <span style={{ color: 'var(--lazor)', fontWeight: 700 }}>Passkey-Native</span> Solana Apps
             </h1>
             <p className="hero-subtitle">
               This template demonstrates LazorKit SDK integration with passkey
@@ -147,7 +147,7 @@ function App() {
                       size={18}
                       strokeWidth={1.5}
                       className={`transition-all duration-200 ${activeTab === tab.id
-                        ? 'text-white'
+                        ? 'text-black'
                         : 'text-zinc-400 group-hover:text-zinc-200'
                         }`}
                     />
