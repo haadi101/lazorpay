@@ -3,8 +3,7 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import type { ParsedAccountData } from '@solana/web3.js';
 import {
     getAssociatedTokenAddress,
-    createApproveInstruction,
-    TOKEN_PROGRAM_ID
+    createApproveInstruction
 } from '@solana/spl-token';
 import { Zap, Shield, CheckCircle, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { Card } from '../ui/Card';
