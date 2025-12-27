@@ -106,4 +106,4 @@ export const SUBSCRIPTION_PRICE_USDC = 0.5;
  * Service wallet address for receiving subscriptions.
  * This is a demo keypair (not a real service).
  */
-export const SERVICE_WALLET_PUBKEY = 'HzBz2t5b5c5d5e5f5g5h5i5j5k5l5m5n5o5p5q5r5s5t';
+export const SERVICE_WALLET_PUBKEY = '11111111111111111111111111111111';
