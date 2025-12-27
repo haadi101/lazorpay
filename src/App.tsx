@@ -23,7 +23,6 @@ import {
   Fingerprint,
   ArrowRightLeft,
   PenLine,
-  Coins,
   Zap,
   User,
   KeyRound,
@@ -43,7 +42,7 @@ import { WalletInfo } from './components/wallet/WalletInfo';
 import { PasskeyDemo } from './components/demos/PasskeyDemo';
 import { GaslessTransfer } from './components/demos/GaslessTransfer';
 import { MessageSign } from './components/demos/MessageSign';
-import { SponsoredMint } from './components/demos/SponsoredMint';
+import { SubscriptionDemo } from './components/demos/SubscriptionDemo';
 
 // Styles
 import './index.css';
@@ -52,7 +51,7 @@ import './index.css';
 // DEMO TABS - Using Lucide Icons
 // =============================================================================
 
-type DemoTab = 'passkey' | 'transfer' | 'sign' | 'mint';
+type DemoTab = 'passkey' | 'transfer' | 'sign' | 'subscription';
 
 interface TabConfig {
   id: DemoTab;
@@ -64,7 +63,7 @@ const tabs: TabConfig[] = [
   { id: 'passkey', label: 'Passkey Auth', Icon: Fingerprint },
   { id: 'transfer', label: 'Gasless Transfer', Icon: ArrowRightLeft },
   { id: 'sign', label: 'Sign Message', Icon: PenLine },
-  { id: 'mint', label: 'Token Mint', Icon: Coins },
+  { id: 'subscription', label: 'Subscription', Icon: Zap },
 ];
 
 // =============================================================================
@@ -163,7 +162,7 @@ function App() {
               {activeTab === 'passkey' && <PasskeyDemo />}
               {activeTab === 'transfer' && <GaslessTransfer />}
               {activeTab === 'sign' && <MessageSign />}
-              {activeTab === 'mint' && <SponsoredMint />}
+              {activeTab === 'subscription' && <SubscriptionDemo />}
             </div>
           </section>
 
