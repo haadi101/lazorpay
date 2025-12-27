@@ -142,12 +142,12 @@ function App() {
                   className={`demo-tab group ${activeTab === tab.id ? 'demo-tab-active' : ''}`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <span className="tab-icon">
+                  <span className="tab-icon" style={{ color: activeTab === tab.id ? '#000000' : '' }}>
                     <tab.Icon
                       size={18}
                       strokeWidth={1.5}
                       className={`transition-all duration-200 ${activeTab === tab.id
-                        ? 'text-black'
+                        ? ''
                         : 'text-zinc-400 group-hover:text-zinc-200'
                         }`}
                     />
