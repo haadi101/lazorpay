@@ -7,6 +7,8 @@
 
 > **Building Netflix-style recurring billing on-chain without seed phrases.**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Devnet-blue)](https://lazorpay-rflda.ondigitalocean.app/)
+
 LazorPay is a gasless subscription starter kit built on the **LazorKit** Smart Wallet infrastructure. It demonstrates how to implement recurring payments and biometric authentication on Solana, enabling a Web2-like experience for Web3 payments.
 
 ## Features
