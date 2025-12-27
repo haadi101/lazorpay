@@ -1,8 +1,7 @@
 /**
- * Button Component Styles
+ * Button Component - LAZOR TACTICAL
  * 
- * Uses CSS custom properties for easy theming.
- * Includes hover states, focus rings, and loading animations.
+ * Sharp edges. Acid green. No gradient glow.
  */
 
 /* =============================================================================
@@ -14,23 +13,26 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: inherit;
+  font-family: var(--font-display);
   font-weight: 600;
+  letter-spacing: -0.01em;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  text-transform: uppercase;
+  font-size: 0.875rem;
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--accent-primary);
+  outline: 2px solid var(--lazor);
   outline-offset: 2px;
 }
 
@@ -40,73 +42,75 @@
 
 .btn-sm {
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  border-radius: 8px;
+  font-size: 0.75rem;
+  border-radius: 6px;
 }
 
 .btn-md {
   padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  font-size: 0.875rem;
 }
 
 .btn-lg {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  border-radius: 14px;
+  padding: 1.125rem 2rem;
+  font-size: 1rem;
+  border-radius: 10px;
 }
 
 /* =============================================================================
    STYLE VARIANTS
    ============================================================================= */
 
-/* Primary - Gradient accent button */
+/* Primary - LAZOR GREEN */
 .btn-primary {
-  background: var(--accent-gradient);
-  color: white;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  background: var(--lazor);
+  color: #000000;
+  border: 1px solid var(--lazor);
+  box-shadow: 0 0 20px var(--lazor-glow);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  background: var(--lazor-hover);
+  box-shadow: 0 0 30px var(--lazor-glow);
 }
 
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0);
+  background: #a8cc00;
 }
 
-/* Secondary - Subtle background */
+/* Secondary - Zinc frame */
 .btn-secondary {
-  background: var(--bg-card);
+  background: var(--bg-secondary);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--border-subtle);
+  border-color: var(--border-medium);
 }
 
 /* Ghost - Transparent */
 .btn-ghost {
   background: transparent;
   color: var(--text-secondary);
+  border: 1px solid transparent;
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(39, 39, 42, 0.5);
   color: var(--text-primary);
 }
 
-/* Danger - Red for destructive actions */
+/* Danger - Red */
 .btn-danger {
   background: var(--error);
   color: white;
+  border: 1px solid var(--error);
 }
 
 .btn-danger:hover:not(:disabled) {
   background: #dc2626;
-  transform: translateY(-2px);
 }
 
 /* =============================================================================

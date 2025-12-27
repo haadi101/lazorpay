@@ -1,48 +1,63 @@
 /**
- * LazorPay Starter Template - Global Styles
+ * LazorPay Starter Template - LAZOR-NATIVE TACTICAL UI
  * 
- * A premium dark theme with glassmorphism effects.
- * Uses CSS custom properties for easy theming.
+ * Cyber-brutalist design system inspired by linear.app, phantom, tensor.trade
+ * NO soft shadows. NO purple. Sharp edges. Dangerous greens.
  */
 
 /* =============================================================================
-   CSS CUSTOM PROPERTIES (Design Tokens)
+   CSS CUSTOM PROPERTIES (Lazor Design Tokens)
    ============================================================================= */
 
 :root {
-  /* Background colors */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: rgba(255, 255, 255, 0.03);
+  /* Background colors - Deepest Charcoal */
+  --bg-primary: #09090b;
+  /* zinc-950 */
+  --bg-secondary: #18181b;
+  /* zinc-900 */
+  --bg-card: rgba(24, 24, 27, 0.5);
+  /* zinc-900/50 with blur */
 
-  /* Accent colors - Indigo/Purple gradient */
-  --accent-primary: #6366f1;
-  --accent-secondary: #8b5cf6;
-  --accent-tertiary: #d946ef;
-  --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef);
+  /* LAZOR GREEN - The Acid (#CCFF00) */
+  --lazor: #CCFF00;
+  --lazor-hover: #b8e600;
+  --lazor-glow: rgba(204, 255, 0, 0.2);
 
-  /* Text colors */
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.6);
-  --text-muted: rgba(255, 255, 255, 0.4);
+  /* Text colors - Lower contrast */
+  --text-primary: #fafafa;
+  /* zinc-50 */
+  --text-secondary: #a1a1aa;
+  /* zinc-400 */
+  --text-muted: #71717a;
+  /* zinc-500 */
 
-  /* Border colors */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.12);
+  /* Border colors - Sharp */
+  --border-subtle: #27272a;
+  /* zinc-800 */
+  --border-medium: #3f3f46;
+  /* zinc-700 */
 
   /* Status colors */
-  --success: #22c55e;
+  --success: #10b981;
+  /* emerald-500 */
   --error: #ef4444;
+  /* red-500 */
   --warning: #f59e0b;
-  --info: #3b82f6;
+  /* amber-500 */
+  --info: #06b6d4;
+  /* cyan-500 */
 
   /* Spacing */
   --container-max: 1200px;
   --header-height: 72px;
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  /* Typography - Tactical */
+  --font-display: 'Space Grotesk', sans-serif;
+  /* Headings */
+  --font-mono: 'JetBrains Mono', monospace;
+  /* Numbers/Data */
+  --font-sans: 'Inter', sans-serif;
+  /* Body */
 }
 
 /* =============================================================================
@@ -84,15 +99,28 @@ body {
   overflow-x: hidden;
 }
 
-/* Background gradient effect */
+/* Tactical Grid Pattern Background */
 .app-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(139, 92, 246, 0.1), transparent),
-    radial-gradient(ellipse 50% 30% at 0% 100%, rgba(217, 70, 239, 0.08), transparent);
+  background-image:
+    linear-gradient(to right, rgba(39, 39, 42, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(39, 39, 42, 0.3) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Subtle radar glow in top-right */
+  background-color: var(--bg-primary);
+}
+
+.app-bg::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, var(--lazor-glow) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 /* =============================================================================
