@@ -32,10 +32,15 @@ export function SubscriptionDemo() {
     const { execute, isLoading, error, lastSignature } = useTransaction();
 
     const handleSubscribe = async () => {
+        console.log('🔥 handleSubscribe called!');
+
         if (!smartWalletPubkey) {
+            console.log('❌ No wallet connected');
             alert("Please connect your wallet first!");
             return;
         }
+
+        console.log('✅ Wallet connected:', smartWalletPubkey.toBase58());
 
         try {
             await execute(async () => {
