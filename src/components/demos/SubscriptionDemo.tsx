@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '@lazorkit/wallet';
 import {
     Connection,
@@ -30,6 +30,16 @@ export function SubscriptionDemo() {
 
     // Transaction hook
     const { execute, isLoading, error, lastSignature } = useTransaction();
+
+    // Log error state changes
+    useEffect(() => {
+        console.log('🔴 Error state changed:', error);
+    }, [error]);
+
+    // Log loading state changes
+    useEffect(() => {
+        console.log('⏳ Loading state:', isLoading);
+    }, [isLoading]);
 
     const handleSubscribe = async () => {
         console.log('🔥 handleSubscribe called!');
