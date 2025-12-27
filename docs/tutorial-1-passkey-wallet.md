@@ -60,10 +60,10 @@ A passkey is a **WebAuthn credential** that replaces passwords with biometric au
 
 | Feature | Seed Phrase | Passkey |
 |---------|-------------|---------|
-| Phishing-resistant | ❌ Can be tricked | ✅ Domain-bound |
-| Backup needed | ✅ 24 words | ❌ Platform-synced |
-| Device requirement | ❌ Any device | ✅ Trusted device |
-| User experience | 😰 Confusing | 😊 Already familiar |
+| Phishing-resistant | Vulnerable to phishing | Domain-bound (Secure) |
+| Backup needed | 24 words required | Platform-synced |
+| Device requirement | Any device | Trusted device |
+| User experience | Complex | Familiar |
 
 ---
 
@@ -109,7 +109,7 @@ export default defineConfig({
 });
 ```
 
-> ⚠️ **Common Error:** "Buffer is not defined" – This means polyfills aren't configured correctly.
+> **Common Error:** "Buffer is not defined" – This means polyfills aren't configured correctly.
 
 ---
 
@@ -147,9 +147,9 @@ function App() {
 
 | Prop | Required | Description |
 |------|----------|-------------|
-| `rpcUrl` | ✅ | Solana RPC endpoint (Devnet/Mainnet) |
-| `portalUrl` | ❌ | LazorKit authentication portal (default: `portal.lazor.sh`) |
-| `paymasterConfig` | ❌ | Enables gasless transactions |
+| `rpcUrl` | Required | Solana RPC endpoint (Devnet/Mainnet) |
+| `portalUrl` | Optional | LazorKit authentication portal (default: `portal.lazor.sh`) |
+| `paymasterConfig` | Optional | Enables gasless transactions |
 
 ---
 
@@ -192,7 +192,7 @@ export function ConnectButton() {
 
   return (
     <button onClick={handleConnect} disabled={isConnecting}>
-      {isConnecting ? 'Connecting...' : '🔐 Connect with Passkey'}
+      {isConnecting ? 'Connecting...' : 'Connect with Passkey'}
     </button>
   );
 }
@@ -246,6 +246,12 @@ const instruction = SystemProgram.transfer({
    - Opens LazorKit portal in popup/redirect
    - User sees passkey prompt (Face ID, Touch ID, etc.)
 
+### Important Note on Signing Transactions
+
+While `useWallet` is great for connecting users, **signing transactions on Solana requires special handling** for passkey compatibility. 
+
+In [Tutorial 2](./tutorial-2-gasless-transactions.md), we'll introduce a `usePatchedWallet` hook that fixes common signature issues. For now, we'll focus on connection logic.
+
 3. **Create or Retrieve Smart Wallet**
    - Passkey public key is used to derive a PDA
    - This PDA is your smart wallet address
@@ -288,7 +294,7 @@ function WalletButton() {
   if (isConnected && wallet) {
     return (
       <div>
-        <p>✅ Connected to: {wallet.smartWallet}</p>
+        <p>Connected to: {wallet.smartWallet}</p>
         <button onClick={disconnect}>Disconnect</button>
       </div>
     );
@@ -296,7 +302,7 @@ function WalletButton() {
 
   return (
     <button onClick={() => connect({ feeMode: 'paymaster' })} disabled={isConnecting}>
-      {isConnecting ? '🔄 Connecting...' : '🔐 Connect with Passkey'}
+      {isConnecting ? 'Connecting...' : 'Connect with Passkey'}
     </button>
   );
 }
@@ -340,9 +346,9 @@ Now that you can authenticate users, learn how to:
 
 ## Summary
 
-✅ Installed `@lazorkit/wallet` and configured polyfills  
-✅ Wrapped app with `LazorkitProvider`  
-✅ Used `useWallet` hook for authentication  
-✅ Understood the `WalletInfo` object  
+- Installed `@lazorkit/wallet` and configured polyfills  
+- Wrapped app with `LazorkitProvider`  
+- Used `useWallet` hook for authentication  
+- Understood the `WalletInfo` object  
 
 **You've successfully integrated passkey authentication!** Users can now log into your Solana app with just biometrics—no seed phrases, no extensions, no friction.

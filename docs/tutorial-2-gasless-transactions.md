@@ -75,10 +75,16 @@ Let's start with a simple gasless SOL transfer:
 
 ```tsx
 import { useWallet } from '@lazorkit/wallet';
-import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { usePatchedWallet } from '../hooks/usePatchedWallet'; // Import our specific hook!
+import { SystemProgram, PublicKey } from '@solana/web3.js';
+
+// Safe integer math utility (avoid floating point errors!)
+import { solToLamports } from '../components/demos/GaslessTransfer';
 
 function TransferDemo() {
-  const { signAndSendTransaction, smartWalletPubkey, isConnected } = useWallet();
+  const { smartWalletPubkey, isConnected } = useWallet();
+  // 🔥 CRITICAL: Use the patched hook for signing to fix High-S signature issues
+  const { signAndSendTransaction } = usePatchedWallet();
 
   const handleTransfer = async () => {
     if (!smartWalletPubkey) return;
@@ -87,7 +93,7 @@ function TransferDemo() {
     const instruction = SystemProgram.transfer({
       fromPubkey: smartWalletPubkey,  // Your smart wallet
       toPubkey: new PublicKey('RECIPIENT_ADDRESS'),
-      lamports: 0.01 * LAMPORTS_PER_SOL,  // 0.01 SOL
+      lamports: solToLamports('0.01'),  // Safe conversation to bigint
     });
 
     // 2. Sign and send with paymaster
@@ -111,6 +117,15 @@ function TransferDemo() {
   );
 }
 ```
+
+### ⚠️ Critical Note: The "Patched" Wallet
+
+You might notice we imported `usePatchedWallet` instead of just using `signAndSendTransaction` from `useWallet`.
+
+**Why?**
+Solana requires ECDSA signatures to be in "Low-S" form. Some passkey authenticators return "High-S" signatures, which Solana rejects. Our `usePatchedWallet` hook automatically detects and normalizes these signatures.
+
+**Always use `usePatchedWallet` for signing!**
 
 ### Key Points:
 
@@ -176,9 +191,12 @@ import {
   createTransferInstruction,
   getAssociatedTokenAddress,
 } from '@solana/spl-token';
+import { useWallet } from '@lazorkit/wallet';
+import { usePatchedWallet } from '../hooks/usePatchedWallet';
 
 async function transferToken() {
-  const { signAndSendTransaction, smartWalletPubkey } = useWallet();
+  const { smartWalletPubkey } = useWallet();
+  const { signAndSendTransaction } = usePatchedWallet();
   
   const mint = new PublicKey('TOKEN_MINT_ADDRESS');
   const recipient = new PublicKey('RECIPIENT_ADDRESS');
@@ -224,7 +242,8 @@ async function transferToken() {
 ```tsx
 function TransactionButton() {
   const [status, setStatus] = useState<'idle' | 'signing' | 'pending' | 'confirmed' | 'failed'>('idle');
-  const { signAndSendTransaction, smartWalletPubkey } = useWallet();
+  const { smartWalletPubkey } = useWallet();
+  const { signAndSendTransaction } = usePatchedWallet();
 
   const handleTransaction = async () => {
     try {
@@ -253,10 +272,10 @@ function TransactionButton() {
 
   return (
     <button onClick={handleTransaction} disabled={status === 'signing'}>
-      {status === 'signing' && '🔐 Confirm with Passkey...'}
-      {status === 'pending' && '⏳ Processing...'}
-      {status === 'confirmed' && '✅ Done!'}
-      {status === 'failed' && '❌ Try Again'}
+      {status === 'signing' && 'Confirm with Passkey...'}
+      {status === 'pending' && 'Processing...'}
+      {status === 'confirmed' && 'Done!'}
+      {status === 'failed' && 'Try Again'}
       {status === 'idle' && 'Send Transaction'}
     </button>
   );
@@ -272,6 +291,7 @@ For complex transactions (swaps, mints), you may need more compute:
 ```tsx
 import { ComputeBudgetProgram } from '@solana/web3.js';
 
+// usePatchedWallet also supports custom timeouts!
 const signature = await signAndSendTransaction({
   instructions: [
     // Add compute budget instruction FIRST
@@ -291,10 +311,14 @@ const signature = await signAndSendTransaction({
 ```tsx
 import { useState } from 'react';
 import { useWallet } from '@lazorkit/wallet';
-import { SystemProgram, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { usePatchedWallet } from '../hooks/usePatchedWallet';
+import { SystemProgram, PublicKey } from '@solana/web3.js';
+import { solToLamports } from '../components/demos/GaslessTransfer';
 
 export function GaslessTransferDemo() {
-  const { signAndSendTransaction, smartWalletPubkey, isConnected } = useWallet();
+  const { smartWalletPubkey, isConnected } = useWallet();
+  const { signAndSendTransaction } = usePatchedWallet();
+  
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('0.01');
   const [status, setStatus] = useState('idle');
@@ -314,7 +338,7 @@ export function GaslessTransferDemo() {
       const instruction = SystemProgram.transfer({
         fromPubkey: smartWalletPubkey,
         toPubkey: recipientPubkey,
-        lamports: parseFloat(amount) * LAMPORTS_PER_SOL,
+        lamports: solToLamports(amount), // Use safe math!
       });
 
       // Execute gasless transaction
@@ -357,12 +381,12 @@ export function GaslessTransferDemo() {
         onClick={handleTransfer}
         disabled={status === 'signing' || !recipient}
       >
-        {status === 'signing' ? '🔐 Signing...' : 'Send (Gasless)'}
+        {status === 'signing' ? 'Signing...' : 'Send (Gasless)'}
       </button>
 
       {status === 'confirmed' && (
         <p>
-          ✅ Success!{' '}
+          Success!{' '}
           <a 
             href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
             target="_blank"
@@ -373,7 +397,7 @@ export function GaslessTransferDemo() {
       )}
 
       {status === 'failed' && (
-        <p>❌ Transaction failed. Please try again.</p>
+        <p>Transaction failed. Please try again.</p>
       )}
     </div>
   );
@@ -413,10 +437,10 @@ export function GaslessTransferDemo() {
 
 ## Summary
 
-✅ Understood how paymaster sponsorship works  
-✅ Built single and multi-instruction transactions  
-✅ Handled transaction lifecycle states  
-✅ Learned to pay gas in alternative tokens  
+- Understood how paymaster sponsorship works  
+- Built single and multi-instruction transactions  
+- Handled transaction lifecycle states  
+- Learned to pay gas in alternative tokens  
 
 **Your users can now transact without ever buying SOL for gas!**
 
