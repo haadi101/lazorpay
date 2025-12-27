@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useWallet } from '@lazorkit/wallet';
 import {
     Connection,
@@ -9,7 +9,7 @@ import {
     createApproveInstruction,
     getAssociatedTokenAddress
 } from '@solana/spl-token';
-import { Zap, Shield, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { Zap, Shield, CheckCircle, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 
@@ -32,59 +32,60 @@ export function SubscriptionDemo() {
     const { execute, isLoading, error, lastSignature } = useTransaction();
 
     // Log error state changes
-    useEffect(() => {
-        console.log('🔴 Error state changed:', error);
-    }, [error]);
+    // useEffect(() => {
+    //     console.log('🔴 Error state changed:', error);
+    // }, [error]);
 
     // Log loading state changes
-    useEffect(() => {
-        console.log('⏳ Loading state:', isLoading);
-    }, [isLoading]);
+    // useEffect(() => {
+    //     console.log('⏳ Loading state:', isLoading);
+    // }, [isLoading]);
 
     const handleSubscribe = async () => {
-        console.log('🔥 handleSubscribe called!');
+        // console.log('🔥 handleSubscribe called!');
 
         if (!smartWalletPubkey) {
-            console.log('❌ No wallet connected');
+            // console.log('❌ No wallet connected');
             alert("Please connect your wallet first!");
             return;
         }
 
-        console.log('✅ Wallet connected:', smartWalletPubkey.toBase58());
+        // console.log('✅ Wallet connected:', smartWalletPubkey.toBase58());
 
         try {
-            console.log('📤 Starting execute...');
+            // console.log('📤 Starting execute...');
             await execute(async () => {
-                console.log('🔄 Inside execute callback');
+                // console.log('🔄 Inside execute callback');
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
 
                 // 1. Check if user has USDC Account
-                console.log('🔍 Checking for USDC account...');
+                // console.log('🔍 Checking for USDC account...');
                 const usdcMint = new PublicKey(TOKENS.USDC.mint);
 
                 let ata: PublicKey;
                 try {
-                    console.log('🧩 Deriving ATA for mint:', usdcMint.toBase58(), 'owner:', smartWalletPubkey.toBase58());
+                    // console.log('🧩 Deriving ATA for mint:', usdcMint.toBase58(), 'owner:', smartWalletPubkey.toBase58());
                     // Allow owner off curve (true) because Smart Wallets are PDAs!
                     ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey, true);
-                    console.log('📍 USDC ATA:', ata.toBase58());
+                    // console.log('📍 USDC ATA:', ata.toBase58());
                 } catch (ataErr) {
-                    console.error('💥 ATA Derivation failed:', ataErr);
+                    console.error('ATA Derivation failed:', ataErr);
                     throw new Error('Failed to find your USDC account address. Please try disconnection and reconnecting.');
                 }
 
                 const accountInfo = await connection.getAccountInfo(ata);
-                console.log('📄 Account info:', accountInfo ? 'EXISTS' : 'NULL');
+                // console.log('📄 Account info:', accountInfo ? 'EXISTS' : 'NULL');
 
                 if (!accountInfo) {
-                    console.log('❌ No USDC account found!');
+                    // console.log('❌ No USDC account found!');
                     throw new Error(
                         "You don't have a USDC account yet! Try the 'Gasless Transfer' demo first to receive some USDC."
                     );
                 }
 
                 // 2. Create Approve Instruction
-                console.log('✍️ Creating approve instruction...');
+                // console.log('✍️ Creating approve instruction...');
+                // Grants SERVICE_WALLET permission to spend 50 USDC
                 const amount = 50 * Math.pow(10, TOKENS.USDC.decimals);
 
                 const approveIx = createApproveInstruction(
@@ -95,22 +96,21 @@ export function SubscriptionDemo() {
                 );
 
                 // 3. Execute Gasless Transaction
-                console.log('🚀 Sending transaction...');
+                // console.log('🚀 Sending transaction...');
                 const signature = await signAndSendTransaction({
                     instructions: [approveIx],
                     transactionOptions: { computeUnitLimit: 100_000 }
                 });
 
-                console.log('✅ Transaction sent:', signature);
+                // console.log('✅ Transaction sent:', signature);
                 setIsSubscribed(true);
                 return signature;
 
             }, 'sign', 'Subscribed to Lazor+ Pro');
-            console.log('✅ Execute completed');
+            // console.log('✅ Execute completed');
         } catch (err) {
-            // Fallback alert in case error state doesn't render
-            const msg = err instanceof Error ? err.message : 'Unknown error';
-            console.error('❌ Subscription error:', msg);
+            // Fallback logging
+            console.error('Subscription error:', err);
         }
     };
 
@@ -195,12 +195,26 @@ export function SubscriptionDemo() {
                                         border: '1px solid rgba(239, 68, 68, 0.3)',
                                         borderRadius: '8px',
                                         display: 'flex',
-                                        alignItems: 'flex-start',
+                                        flexDirection: 'column',
                                         gap: '0.5rem'
                                     }}
                                 >
-                                    <AlertCircle size={16} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
-                                    <p style={{ fontSize: '0.875rem', color: '#ef4444', margin: 0 }}>{error}</p>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                        <AlertCircle size={16} style={{ color: '#ef4444', flexShrink: 0, marginTop: '2px' }} />
+                                        <p style={{ fontSize: '0.875rem', color: '#ef4444', margin: 0 }}>{error}</p>
+                                    </div>
+
+                                    {error.includes("don't have a USDC account") && (
+                                        <a
+                                            href="https://faucet.circle.com/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-300 py-1.5 px-3 rounded text-center transition-colors flex items-center justify-center gap-1 mt-1"
+                                            style={{ textDecoration: 'none' }}
+                                        >
+                                            Get Devnet USDC from Faucet <ExternalLink size={10} />
+                                        </a>
+                                    )}
                                 </div>
                             )}
                         </div>
