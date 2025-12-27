@@ -12,7 +12,7 @@ import { Button } from '../ui/Button';
 import { useWallet } from '@lazorkit/wallet';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { useTransaction } from '../../hooks/useTransaction';
-import { ACTIVE_NETWORK, TOKENS, getExplorerUrl } from '../../config/lazorkit';
+import { ACTIVE_NETWORK, getActiveTokens, getExplorerUrl } from '../../config/lazorkit';
 import { SUBSCRIPTION_PRICE_USDC, SERVICE_WALLET_PUBKEY } from '../../config/constants';
 import './demos.css';
 
@@ -45,9 +45,10 @@ export function SubscriptionDemo() {
         try {
             await execute(async () => {
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
+                const tokens = getActiveTokens();
 
                 // 1. Check if user has USDC Account
-                const usdcMint = new PublicKey(TOKENS.USDC.mint);
+                const usdcMint = new PublicKey(tokens.USDC.mint);
 
                 let ata: PublicKey;
                 try {
@@ -79,7 +80,7 @@ export function SubscriptionDemo() {
 
                 // 2. Create Approve Instruction
                 // Grants SERVICE_WALLET permission to spend subscription amount
-                const amount = SUBSCRIPTION_PRICE_USDC * Math.pow(10, TOKENS.USDC.decimals);
+                const amount = SUBSCRIPTION_PRICE_USDC * Math.pow(10, tokens.USDC.decimals);
                 // Use a valid pubkey instead of system program (Critical Fix #7)
                 const serviceWallet = new PublicKey(SERVICE_WALLET_PUBKEY);
 
@@ -95,6 +96,13 @@ export function SubscriptionDemo() {
                     instructions: [approveIx],
                     transactionOptions: { computeUnitLimit: 100_000 }
                 });
+
+                // 4. Verify Transaction (Roast Fix #3)
+                // Don't just trust the signature, verify it on-chain
+                const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+                if (confirmation.value.err) {
+                    throw new Error(`Transaction failed: ${confirmation.value.err.toString()}`);
+                }
 
                 setIsSubscribed(true);
                 return signature;

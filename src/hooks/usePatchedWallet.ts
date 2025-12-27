@@ -72,7 +72,8 @@ export function usePatchedWallet() {
                 };
             }
         } catch (e) {
-            console.warn('⚠️ Could not normalize signature, using original', e);
+            console.error('Signature normalization failed:', e);
+            throw new Error('Failed to normalize signature. Your wallet may be producing incompatible signatures.');
         }
 
         return result;
@@ -87,8 +88,6 @@ export function usePatchedWallet() {
     const patchedSignAndSendTransaction = useCallback(async (
         payload: Parameters<typeof wallet.signAndSendTransaction>[0]
     ): Promise<string> => {
-        // Constants now imported from config/constants
-
         let lastError: Error | null = null;
 
         for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -108,32 +107,21 @@ export function usePatchedWallet() {
 
                 if (timerId) clearTimeout(timerId);
 
-                // Extract signature from various possible return formats
-                let signature: string;
+                // Robust return value parsing
+                const val = result as unknown;
 
-                if (typeof result === 'string') {
-                    signature = result;
-                } else if (result && typeof result === 'object') {
-                    const obj = result as Record<string, unknown>;
-                    if ('signature' in obj && typeof obj.signature === 'string') {
-                        signature = obj.signature;
-                    } else if ('signatures' in obj && Array.isArray(obj.signatures) && obj.signatures.length > 0) {
-                        const sigs = obj.signatures as string[];
-                        signature = sigs[sigs.length - 1];
-                    } else {
-                        const str = JSON.stringify(result);
-                        const match = str.match(/[1-9A-HJ-NP-Za-km-z]{87,88}/);
-                        if (match) {
-                            signature = match[0];
-                        } else {
-                            throw new Error('Could not extract signature from result');
-                        }
-                    }
-                } else {
-                    throw new Error(`Unexpected result type: ${typeof result}`);
+                if (typeof val === 'string') {
+                    return val;
                 }
 
-                return signature;
+                if (val && typeof val === 'object' && 'signature' in val) {
+                    const sig = (val as any).signature;
+                    if (typeof sig === 'string') return sig;
+                }
+
+                console.error('Unexpected SDK result:', val);
+                throw new Error(`Unexpected result format from wallet SDK: ${typeof val}`);
+
 
             } catch (error) {
                 if (timerId) clearTimeout(timerId);

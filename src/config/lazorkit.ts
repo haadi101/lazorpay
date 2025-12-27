@@ -14,8 +14,12 @@
 /** Solana signature length in base58 encoding (87-88 characters) */
 export const SOLANA_SIGNATURE_LENGTH = { min: 87, max: 88 };
 
-/** Default compute unit limit for complex transactions */
-export const DEFAULT_COMPUTE_UNIT_LIMIT = 300_000;
+import { MAX_RETRIES, BASE_DELAY_MS, TIMEOUT_MS, COMPUTE_UNIT_LIMIT } from './constants';
+
+/**
+ * Default Compute Unit Limit for Paymaster Transactions
+ */
+export const DEFAULT_COMPUTE_UNIT_LIMIT = COMPUTE_UNIT_LIMIT;
 
 /** Transaction retry configuration */
 export const RETRY_CONFIG = {
@@ -116,23 +120,46 @@ export const LAZORKIT_CONFIG = {
  * Note: These are different from mainnet addresses!
  */
 export const TOKENS = {
-    // Native SOL (wrapped)
-    SOL: {
-        symbol: 'SOL',
-        name: 'Solana',
-        mint: 'So11111111111111111111111111111111111111112',
-        decimals: 9,
-        logo: '◎',
+    devnet: {
+        SOL: {
+            symbol: 'SOL',
+            name: 'Solana',
+            mint: 'So11111111111111111111111111111111111111112',
+            decimals: 9,
+            logo: '◎',
+        },
+        USDC: {
+            symbol: 'USDC',
+            name: 'USD Coin',
+            mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', // Devnet USDC
+            decimals: 6,
+            logo: '$',
+        },
     },
-    // USDC on Devnet
-    USDC: {
-        symbol: 'USDC',
-        name: 'USD Coin',
-        mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU', // Devnet USDC
-        decimals: 6,
-        logo: '$',
+    mainnet: {
+        SOL: {
+            symbol: 'SOL',
+            name: 'Solana',
+            mint: 'So11111111111111111111111111111111111111112',
+            decimals: 9,
+            logo: '◎',
+        },
+        USDC: {
+            symbol: 'USDC',
+            name: 'USD Coin',
+            mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // Mainnet USDC
+            decimals: 6,
+            logo: '$',
+        },
     },
 } as const;
+
+/**
+ * Helper to get tokens for the active network
+ */
+export const getActiveTokens = () => {
+    return ACTIVE_NETWORK.name === 'Mainnet' ? TOKENS.mainnet : TOKENS.devnet;
+};
 
 // =============================================================================
 // UTILITY FUNCTIONS

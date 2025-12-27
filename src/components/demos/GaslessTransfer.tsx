@@ -30,8 +30,15 @@ import './demos.css';
  * Convert SOL string to lamports using string parsing (avoids floating point errors)
  * Example: "0.1" -> 100000000n
  */
+/**
+ * Convert SOL string to lamports safely.
+ * Uses string manipulation to avoid floating point errors.
+ * Handles both '.' and ',' decimal separators.
+ */
 function solToLamports(sol: string): bigint {
-    const [whole = '0', frac = ''] = sol.split('.');
+    // Normalize decimal separator
+    const normalized = sol.replace(',', '.').trim();
+    const [whole = '0', frac = ''] = normalized.split('.');
     const fracPadded = frac.padEnd(9, '0').slice(0, 9);
     return BigInt(whole + fracPadded);
 }
