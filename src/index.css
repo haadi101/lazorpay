@@ -249,15 +249,15 @@ body {
   overflow: hidden;
 }
 
-/* Sliding indicator - the purple gradient pill */
+/* Sliding indicator - LAZOR GREEN for selected tab */
 .demo-tabs-indicator {
   position: absolute;
   top: 0.375rem;
   left: 0.375rem;
   height: calc(100% - 0.75rem);
-  background: var(--accent-gradient);
+  background: var(--lazor);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 25px var(--lazor-glow);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 0;
   pointer-events: none;
