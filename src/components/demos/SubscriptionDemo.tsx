@@ -61,8 +61,16 @@ export function SubscriptionDemo() {
                 // 1. Check if user has USDC Account
                 console.log('🔍 Checking for USDC account...');
                 const usdcMint = new PublicKey(TOKENS.USDC.mint);
-                const ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
-                console.log('📍 USDC ATA:', ata.toBase58());
+
+                let ata: PublicKey;
+                try {
+                    console.log('🧩 Deriving ATA for mint:', usdcMint.toBase58(), 'owner:', smartWalletPubkey.toBase58());
+                    ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
+                    console.log('📍 USDC ATA:', ata.toBase58());
+                } catch (ataErr) {
+                    console.error('💥 ATA Derivation failed:', ataErr);
+                    throw new Error('Failed to find your USDC account address. Please try disconnection and reconnecting.');
+                }
 
                 const accountInfo = await connection.getAccountInfo(ata);
                 console.log('📄 Account info:', accountInfo ? 'EXISTS' : 'NULL');
