@@ -167,7 +167,7 @@ export function SubscriptionDemo() {
                                 <p style={{ fontSize: '1.125rem', color: '#a1a1aa' }}>Monthly Plan</p>
                             </div>
                             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                                <span style={{ fontSize: '3.5rem', fontWeight: 'bold', color: 'white' }}>$50</span>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 'bold', color: 'white' }}>$0.50</span>
                                 <span style={{ fontSize: '1.125rem', color: '#71717a', marginLeft: '0.25rem' }}>/month</span>
                             </div>
                         </div>

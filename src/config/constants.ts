@@ -100,7 +100,7 @@ export const SOLANA_SIGNATURE_LENGTH = { min: 87, max: 88 };
  * Monthly subscription price in USDC.
  * Used for token allowance demos.
  */
-export const SUBSCRIPTION_PRICE_USDC = 50;
+export const SUBSCRIPTION_PRICE_USDC = 0.5;
 
 /**
  * Service wallet address for receiving subscriptions.
