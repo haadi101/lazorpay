@@ -152,7 +152,7 @@ function App() {
                         }`}
                     />
                   </span>
-                  <span className="tab-label">{tab.label}</span>
+                  <span className="tab-label" style={{ color: activeTab === tab.id ? '#000000' : '' }}>{tab.label}</span>
                 </button>
               ))}
             </nav>
