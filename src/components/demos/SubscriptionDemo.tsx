@@ -65,7 +65,8 @@ export function SubscriptionDemo() {
                 let ata: PublicKey;
                 try {
                     console.log('🧩 Deriving ATA for mint:', usdcMint.toBase58(), 'owner:', smartWalletPubkey.toBase58());
-                    ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey);
+                    // Allow owner off curve (true) because Smart Wallets are PDAs!
+                    ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey, true);
                     console.log('📍 USDC ATA:', ata.toBase58());
                 } catch (ataErr) {
                     console.error('💥 ATA Derivation failed:', ataErr);
