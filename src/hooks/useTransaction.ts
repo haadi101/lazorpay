@@ -51,11 +51,16 @@ export function useTransaction() {
      * @param description - Human-readable description
      * @returns The transaction signature if successful
      */
-    const execute = useCallback(async <T extends string>(
-        txFunction: () => Promise<T>,
+    const execute = useCallback(async (
+        txFunction: () => Promise<string>,
         type: Transaction['type'],
         description: string
-    ): Promise<T | null> => {
+    ): Promise<string | null> => {
+        // Prevent duplicate submissions
+        if (state.isLoading) {
+            console.warn('Transaction already in progress');
+            return null;
+        }
 
         // Reset state and start loading
         setState({

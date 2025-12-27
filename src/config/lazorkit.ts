@@ -47,7 +47,7 @@ interface NetworkConfig {
 export const NETWORKS: Record<'devnet' | 'mainnet', NetworkConfig> = {
     devnet: {
         name: 'Devnet',
-        // Use env variable or fallback to public endpoint (rate-limited)
+        // Use env variable or public endpoint (rate-limited but safe)
         rpcUrl: import.meta.env.VITE_RPC_URL || 'https://api.devnet.solana.com',
         explorerUrl: 'https://explorer.solana.com/?cluster=devnet',
         paymasterUrl: 'https://kora.devnet.lazorkit.com',

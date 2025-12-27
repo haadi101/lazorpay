@@ -30,10 +30,10 @@ import './demos.css';
  * Convert SOL string to lamports using string parsing (avoids floating point errors)
  * Example: "0.1" -> 100000000n
  */
-function solToLamports(sol: string): number {
+function solToLamports(sol: string): bigint {
     const [whole = '0', frac = ''] = sol.split('.');
     const fracPadded = frac.padEnd(9, '0').slice(0, 9);
-    return parseInt(whole + fracPadded, 10);
+    return BigInt(whole + fracPadded);
 }
 
 // =============================================================================
@@ -69,23 +69,26 @@ export function GaslessTransfer() {
             let destinationPubkey: PublicKey;
             try {
                 destinationPubkey = new PublicKey(recipient);
-            } catch {
-                throw new Error('Invalid recipient address');
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : 'Unknown error';
+                throw new Error(`Invalid recipient address: ${msg}`);
             }
 
-            // Convert SOL to lamports using precise string parsing
+            // Convert SOL to lamports using safe BigInt
             const lamports = solToLamports(amount);
-            if (lamports <= 0) {
+            if (lamports <= 0n) {
                 throw new Error('Amount must be greater than 0');
             }
 
             // Check balance before attempting transfer
             const connection = new Connection(ACTIVE_NETWORK.rpcUrl);
             const balance = await connection.getBalance(smartWalletPubkey);
-            if (balance < lamports) {
+
+            // balance is number (lamports), lamports is bigint. Compare safely.
+            if (BigInt(balance) < lamports) {
                 throw new Error(
                     `Insufficient balance. You have ${(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL ` +
-                    `but trying to send ${(lamports / LAMPORTS_PER_SOL).toFixed(4)} SOL`
+                    `but trying to send ${amount} SOL`
                 );
             }
 
@@ -155,7 +158,13 @@ export function GaslessTransfer() {
                         min="0.001"
                         placeholder="0.001"
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            // Sanitize input: allow empty or valid decimals (up to 9 places)
+                            if (val === '' || /^\d*\.?\d{0,9}$/.test(val)) {
+                                setAmount(val);
+                            }
+                        }}
                         helperText="Minimum: 0.001 SOL"
                     />
 

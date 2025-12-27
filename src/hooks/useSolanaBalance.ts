@@ -115,6 +115,9 @@ export function useSolanaBalance(
                     await new Promise(resolve => {
                         retryTimeoutRef.current = setTimeout(resolve, delay);
                     });
+
+                    // If component unmounted during the delay, stop processing
+                    if (!isMounted.current) return;
                 }
             }
         }
@@ -126,7 +129,7 @@ export function useSolanaBalance(
                 error: lastError?.message || 'Failed to fetch balance',
             }));
         }
-    }, [publicKey?.toBase58(), config.maxRetries.toString()]); // Stable dependencies
+    }, [publicKey?.toBase58(), config.maxRetries]); // Stable dependencies (fixed race condition)
 
     // Initial fetch + auto-refresh
     useEffect(() => {

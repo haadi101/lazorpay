@@ -11,6 +11,7 @@
 
 import { useWallet } from '@lazorkit/wallet';
 import { useCallback } from 'react';
+import { MAX_RETRIES, BASE_DELAY_MS, TIMEOUT_MS } from '../config/constants';
 import { normalizeSignature, isHighS } from '../utils/lazor-patch';
 
 // =============================================================================
@@ -86,9 +87,7 @@ export function usePatchedWallet() {
     const patchedSignAndSendTransaction = useCallback(async (
         payload: Parameters<typeof wallet.signAndSendTransaction>[0]
     ): Promise<string> => {
-        const MAX_RETRIES = 3;
-        const BASE_DELAY_MS = 2000;
-        const TIMEOUT_MS = 90000;
+        // Constants now imported from config/constants
 
         let lastError: Error | null = null;
 

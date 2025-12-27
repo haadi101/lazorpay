@@ -1,25 +1,21 @@
-
 import { useState } from 'react';
-import { useWallet } from '@lazorkit/wallet';
+import { Connection, PublicKey } from '@solana/web3.js';
+import type { ParsedAccountData } from '@solana/web3.js';
 import {
-    Connection,
-    PublicKey
-} from '@solana/web3.js';
-import {
+    getAssociatedTokenAddress,
     createApproveInstruction,
-    getAssociatedTokenAddress
+    TOKEN_PROGRAM_ID
 } from '@solana/spl-token';
 import { Zap, Shield, CheckCircle, AlertCircle, Sparkles, ExternalLink } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 
+import { useWallet } from '@lazorkit/wallet';
 import { usePatchedWallet } from '../../hooks/usePatchedWallet';
 import { useTransaction } from '../../hooks/useTransaction';
 import { ACTIVE_NETWORK, TOKENS, getExplorerUrl } from '../../config/lazorkit';
-import './demos.css'; // Re-use shared styles
-
-// Mock "Service" Wallet that receives the allowance (using a valid devnet address)
-const SERVICE_WALLET = new PublicKey('11111111111111111111111111111111');
+import { SUBSCRIPTION_PRICE_USDC, SERVICE_WALLET_PUBKEY } from '../../config/constants';
+import './demos.css';
 
 export function SubscriptionDemo() {
     const { smartWalletPubkey } = useWallet();
@@ -42,72 +38,69 @@ export function SubscriptionDemo() {
     // }, [isLoading]);
 
     const handleSubscribe = async () => {
-        // console.log('🔥 handleSubscribe called!');
-
         if (!smartWalletPubkey) {
-            // console.log('❌ No wallet connected');
             alert("Please connect your wallet first!");
             return;
         }
 
-        // console.log('✅ Wallet connected:', smartWalletPubkey.toBase58());
-
         try {
-            // console.log('📤 Starting execute...');
             await execute(async () => {
-                // console.log('🔄 Inside execute callback');
                 const connection = new Connection(ACTIVE_NETWORK.rpcUrl, 'confirmed');
 
                 // 1. Check if user has USDC Account
-                // console.log('🔍 Checking for USDC account...');
                 const usdcMint = new PublicKey(TOKENS.USDC.mint);
 
                 let ata: PublicKey;
                 try {
-                    // console.log('🧩 Deriving ATA for mint:', usdcMint.toBase58(), 'owner:', smartWalletPubkey.toBase58());
                     // Allow owner off curve (true) because Smart Wallets are PDAs!
                     ata = await getAssociatedTokenAddress(usdcMint, smartWalletPubkey, true);
-                    // console.log('📍 USDC ATA:', ata.toBase58());
                 } catch (ataErr) {
                     console.error('ATA Derivation failed:', ataErr);
                     throw new Error('Failed to find your USDC account address. Please try disconnection and reconnecting.');
                 }
 
-                const accountInfo = await connection.getAccountInfo(ata);
-                // console.log('📄 Account info:', accountInfo ? 'EXISTS' : 'NULL');
+                // Decode token account to check balance
+                const accountInfo = await connection.getParsedAccountInfo(ata);
 
-                if (!accountInfo) {
-                    // console.log('❌ No USDC account found!');
+                if (!accountInfo.value) {
                     throw new Error(
                         "You don't have a USDC account yet! Try the 'Gasless Transfer' demo first to receive some USDC."
                     );
                 }
 
+                // Check for insufficient balance (Critical Fix #6)
+                const parsedInfo = accountInfo.value.data as ParsedAccountData;
+                const balance = parsedInfo.parsed?.info?.tokenAmount?.uiAmount || 0;
+
+                if (balance < SUBSCRIPTION_PRICE_USDC) {
+                    throw new Error(
+                        `Insufficient USDC. You have ${balance} USDC but need ${SUBSCRIPTION_PRICE_USDC} USDC for this subscription.`
+                    );
+                }
+
                 // 2. Create Approve Instruction
-                // console.log('✍️ Creating approve instruction...');
-                // Grants SERVICE_WALLET permission to spend 50 USDC
-                const amount = 50 * Math.pow(10, TOKENS.USDC.decimals);
+                // Grants SERVICE_WALLET permission to spend subscription amount
+                const amount = SUBSCRIPTION_PRICE_USDC * Math.pow(10, TOKENS.USDC.decimals);
+                // Use a valid pubkey instead of system program (Critical Fix #7)
+                const serviceWallet = new PublicKey(SERVICE_WALLET_PUBKEY);
 
                 const approveIx = createApproveInstruction(
                     ata,              // User's USDC Account
-                    SERVICE_WALLET,   // Delegate (The Service)
+                    serviceWallet,    // Delegate (The Service)
                     smartWalletPubkey,// Owner (The User)
                     BigInt(amount)
                 );
 
                 // 3. Execute Gasless Transaction
-                // console.log('🚀 Sending transaction...');
                 const signature = await signAndSendTransaction({
                     instructions: [approveIx],
                     transactionOptions: { computeUnitLimit: 100_000 }
                 });
 
-                // console.log('✅ Transaction sent:', signature);
                 setIsSubscribed(true);
                 return signature;
 
             }, 'sign', 'Subscribed to Lazor+ Pro');
-            // console.log('✅ Execute completed');
         } catch (err) {
             // Fallback logging
             console.error('Subscription error:', err);

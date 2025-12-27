@@ -91,3 +91,19 @@ export const MAX_HISTORY_ITEMS = 10;
  * Signatures are 64 bytes, which encode to 87-88 base58 characters.
  */
 export const SOLANA_SIGNATURE_LENGTH = { min: 87, max: 88 };
+
+// =============================================================================
+// SUBSCRIPTION CONFIGURATION
+// =============================================================================
+
+/**
+ * Monthly subscription price in USDC.
+ * Used for token allowance demos.
+ */
+export const SUBSCRIPTION_PRICE_USDC = 50;
+
+/**
+ * Service wallet address for receiving subscriptions.
+ * This is a demo keypair (not a real service).
+ */
+export const SERVICE_WALLET_PUBKEY = 'HzBz2t5b5c5d5e5f5g5h5i5j5k5l5m5n5o5p5q5r5s5t';
