@@ -134,43 +134,43 @@ export function SubscriptionDemo() {
             </div>
 
             <div className="demo-content">
-                <div className="flex flex-col gap-6 w-full">
+                <div className="flex flex-col gap-8 w-full">
                     {/* Visual Tier Card */}
-                    <div className="p-4 rounded-xl bg-zinc-900/50 border border-white/5 relative overflow-hidden group">
+                    <div className="p-6 rounded-xl bg-zinc-900/50 border border-white/5 relative overflow-hidden group text-center">
                         <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
-                            <Zap size={80} />
+                            <Zap size={120} />
                         </div>
 
-                        <div className="flex justify-between items-start mb-4 relative z-10">
+                        <div className="flex flex-col items-center mb-6 relative z-10 gap-2">
                             <div>
-                                <h4 className="text-lg font-bold text-white">Lazor+ Pro</h4>
+                                <h4 className="text-2xl font-bold text-white mb-1">Lazor+ Pro</h4>
                                 <p className="text-sm text-zinc-400">Monthly Plan</p>
                             </div>
-                            <div className="text-right">
-                                <span className="text-2xl font-bold text-white">$50</span>
-                                <span className="text-xs text-zinc-500 block">/month</span>
+                            <div className="mt-2 text-center">
+                                <span className="text-4xl font-bold text-white">$50</span>
+                                <span className="text-sm text-zinc-500 ml-1">/month</span>
                             </div>
                         </div>
 
-                        <ul className="space-y-2 mb-6 relative z-10">
+                        <ul className="space-y-3 mb-8 relative z-10 text-left inline-block mx-auto">
                             <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={14} className="text-emerald-400 mr-2" />
+                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
                                 Gasless Transactions
                             </li>
                             <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={14} className="text-emerald-400 mr-2" />
+                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
                                 Priority Support
                             </li>
                             <li className="flex items-center text-sm text-zinc-300">
-                                <CheckCircle size={14} className="text-emerald-400 mr-2" />
+                                <CheckCircle size={16} className="text-emerald-400 mr-3 shrink-0" />
                                 Early Access Features
                             </li>
                         </ul>
 
                         <div className="relative z-10">
                             {isSubscribed ? (
-                                <div className="w-full py-2 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-center font-medium flex items-center justify-center gap-2">
-                                    <CheckCircle size={16} />
+                                <div className="w-full py-3 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-center font-medium flex items-center justify-center gap-2">
+                                    <CheckCircle size={18} />
                                     Active Subscription
                                 </div>
                             ) : (
@@ -179,6 +179,7 @@ export function SubscriptionDemo() {
                                     fullWidth
                                     onClick={handleSubscribe}
                                     isLoading={isLoading}
+                                    size="lg" // Larger button for mobile
                                 >
                                     Subscribe Now (Gasless)
                                 </Button>
